@@ -31,6 +31,11 @@ ENV PYTHONPATH=/app
 
 COPY ./scripts /app/scripts
 
+# Normalize line endings for shell scripts to avoid CRLF issues when building on Windows
+# and ensure they are executable inside the container.
+RUN find /app/scripts -type f -name "*.sh" -exec sed -i 's/\r$//' {} \; \
+    && chmod +x /app/scripts/*.sh || true
+
 COPY ./pyproject.toml ./uv.lock ./alembic.ini /app/
 
 COPY ./app /app/app
