@@ -5,8 +5,6 @@ import re
 from docx import Document
 
 
-
-
 def read_file(file_path: Path) -> str:
     ext = file_path.suffix.lower()
     if ext == '.txt':
@@ -43,12 +41,15 @@ def remove_Url(text: str) -> str:
     return re.sub(r'https?:\S*', '', text)
 
 
+def remove_extra_spaces(text):
+    return ' '.join(text.split())
+
 
 def clean_text(text: str) -> str:
     lowercase_text = text.lower()
     no_url_text = remove_Url(lowercase_text)
-   
-    return no_url_text
+    cleaned_text = remove_extra_spaces(no_url_text)
+    return cleaned_text
 
    
 
@@ -56,4 +57,3 @@ def preprocess_input(file_path: Path) -> str:
     raw_text = read_file(file_path)
     cleaned_text = clean_text(raw_text)
     return cleaned_text
-    
