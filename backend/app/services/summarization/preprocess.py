@@ -6,6 +6,8 @@ from docx import Document
 
 
 def read_file(file_path: Path) -> str:
+    # Accept either a Path or a string path
+    file_path = Path(file_path)
     ext = file_path.suffix.lower()
     if ext == '.txt':
         return read_txt(file_path)
@@ -51,7 +53,15 @@ def clean_text(text: str) -> str:
     cleaned_text = remove_extra_spaces(no_url_text)
     return cleaned_text
 
-   
+def chunk_text(text, max_words=400, overlap=50):
+
+    words = text.split()
+    start = 0
+    while start < len(words):
+        end = start + max_words
+        chunk = words[start:end]
+        yield " ".join(chunk)
+        start = end - overlap 
 
 def preprocess_input(file_path: Path) -> str:
     raw_text = read_file(file_path)
