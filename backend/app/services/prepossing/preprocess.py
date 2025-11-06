@@ -39,19 +39,16 @@ def read_docx(file_path: Path) -> str:
         text += para.text + "\n"
     return text
 
-def remove_Url(text: str) -> str:
-    return re.sub(r'https?:\S*', '', text)
-
-
-def remove_extra_spaces(text):
-    return ' '.join(text.split())
-
 
 def clean_text(text: str) -> str:
-    lowercase_text = text.lower()
-    no_url_text = remove_Url(lowercase_text)
-    cleaned_text = remove_extra_spaces(no_url_text)
-    return cleaned_text
+    text = text.lower()
+    text = re.sub(r'<[^>]+>', '', text)        # remove HTML tags
+    text = re.sub(r'http\S+|www.\S+', '', text) # remove URLs
+    text = re.sub(r'[^a-z0-9.,!?;:\'\"\s]', '', text) # keep basic punctuation
+    text = re.sub(r'\s+', ' ', text).strip()   # remove extra spaces
+    return text
+
+
 
 def chunk_text(text, max_words=400, overlap=50):
 
@@ -67,3 +64,4 @@ def preprocess_input(file_path: Path) -> str:
     raw_text = read_file(file_path)
     cleaned_text = clean_text(raw_text)
     return cleaned_text
+
