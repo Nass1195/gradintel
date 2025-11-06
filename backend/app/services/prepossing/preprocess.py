@@ -2,16 +2,22 @@ from pathlib import Path
 import pypdf
 import re
 import contractions
-from nltk import sent_tokenize
-from nltk.corpus import stopwords
+from nltk import pos_tag, word_tokenize
+from nltk.corpus import stopwords, wordnet
+from nltk.stem import WordNetLemmatizer
 import nltk
-
 
 
 from docx import Document
 
 
 nltk.download('stopwords')
+nltk.download('wordnet')
+nltk.download('omw-1.4')
+nltk.download('punkt')
+nltk.download('averaged_perceptron_tagger')
+lemmatizer = WordNetLemmatizer()
+
 stop_words = set(stopwords.words('english'))
 
 def read_file(file_path: Path) -> str:
@@ -61,10 +67,18 @@ def normalize_text(text):
     return contractions.fix(text)
 
 def tokenize_text(text):
-    return sent_tokenize(text)
+    return word_tokenize(text)
 
 def remove_stopwords(tokens):
     return [word for word in tokens if word not in stop_words]
+
+def lemmatize_text(text):
+    tagged = pos_tag(text)
+    lemmatized = [
+        lemmatizer.lemmatize(word, get_wordnet_pos(pos)) 
+        for word, pos in tagged
+    ]
+    return lemmatized
 
 def chunk_text(text, max_words=400, overlap=50):
 
