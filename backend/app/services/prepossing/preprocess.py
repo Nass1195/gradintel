@@ -1,9 +1,18 @@
 from pathlib import Path
 import pypdf
 import re
+import contractions
+from nltk import sent_tokenize
+from nltk.corpus import stopwords
+import nltk
+
+
 
 from docx import Document
 
+
+nltk.download('stopwords')
+stop_words = set(stopwords.words('english'))
 
 def read_file(file_path: Path) -> str:
     # Accept either a Path or a string path
@@ -48,7 +57,14 @@ def clean_text(text: str) -> str:
     text = re.sub(r'\s+', ' ', text).strip()   # remove extra spaces
     return text
 
+def normalize_text(text):
+    return contractions.fix(text)
 
+def tokenize_text(text):
+    return sent_tokenize(text)
+
+def remove_stopwords(tokens):
+    return [word for word in tokens if word not in stop_words]
 
 def chunk_text(text, max_words=400, overlap=50):
 
@@ -65,3 +81,4 @@ def preprocess_input(file_path: Path) -> str:
     cleaned_text = clean_text(raw_text)
     return cleaned_text
 
+print(normalize_text(clean_text("I'm testing the preprocessing module! Visit http://example.com for more info.")))
