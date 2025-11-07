@@ -80,19 +80,41 @@ def lemmatize_text(text):
     ]
     return lemmatized
 
-def chunk_text(text, max_words=400, overlap=50):
+def split_sentences(text):
+    return nltk.sent_tokenize(text)
 
-    words = text.split()
-    start = 0
-    while start < len(words):
-        end = start + max_words
-        chunk = words[start:end]
-        yield " ".join(chunk)
-        start = end - overlap 
+def chunk_text(sentences, max_len=512):
+    chunks, chunk = [], []
+    length = 0
+    for sent in sentences:
+        length += len(sent.split())
+        if length > max_len:
+            chunks.append(' '.join(chunk))
+            chunk, length = [sent], len(sent.split())
+        else:
+            chunk.append(sent)
+    if chunk:
+        chunks.append(' '.join(chunk))
+    return chunks
 
-def preprocess_input(file_path: Path) -> str:
+def preprocess_text(text):
+    text = clean_text(text)
+    text = normalize_text(text)
+    sentences = split_sentences(text)
+    chunks = chunk_text(sentences)
+    tokens = tokenize_text(text)
+    tokens = remove_stopwords(tokens)
+    tokens = lemmatize_text(tokens)
+    return {
+        "clean_text": text,
+        "sentences": sentences,
+        "tokens": tokens,
+        "chunks": chunks
+    }
+
+def preprocess_input(file_path: Path):
     raw_text = read_file(file_path)
-    cleaned_text = clean_text(raw_text)
-    return cleaned_text
+    processed_data = preprocess_text(raw_text)
+    return processed_data
 
 print(normalize_text(clean_text("I'm testing the preprocessing module! Visit http://example.com for more info.")))
