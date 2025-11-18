@@ -6,7 +6,7 @@ from nltk import pos_tag, word_tokenize
 from nltk.corpus import stopwords, wordnet
 from nltk.stem import WordNetLemmatizer
 import nltk
-
+from transformers import pipeline
 
 from docx import Document
 
@@ -15,7 +15,10 @@ nltk.download('stopwords')
 nltk.download('wordnet')
 nltk.download('omw-1.4')
 nltk.download('punkt')
+nltk.download('punkt_tab')
 nltk.download('averaged_perceptron_tagger')
+nltk.download('averaged_perceptron_tagger_eng')
+
 lemmatizer = WordNetLemmatizer()
 
 stop_words = set(stopwords.words('english'))
@@ -80,6 +83,22 @@ def lemmatize_text(text):
     ]
     return lemmatized
 
+
+def get_wordnet_pos(tag):
+    """
+    Convert POS tag from NLTK to WordNet compatible tag.
+    """
+    if tag.startswith('J'):
+        return wordnet.ADJ
+    elif tag.startswith('V'):
+        return wordnet.VERB
+    elif tag.startswith('N'):
+        return wordnet.NOUN
+    elif tag.startswith('R'):
+        return wordnet.ADV
+    else:
+        return wordnet.NOUN  # default
+
 def split_sentences(text):
     return nltk.sent_tokenize(text)
 
@@ -116,5 +135,3 @@ def preprocess_input(file_path: Path):
     raw_text = read_file(file_path)
     processed_data = preprocess_text(raw_text)
     return processed_data
-
-print(normalize_text(clean_text("I'm testing the preprocessing module! Visit http://example.com for more info.")))

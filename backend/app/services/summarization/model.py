@@ -1,6 +1,6 @@
 from transformers import pipeline
 from app.services.preprocess import preprocess
-# load a summarization model
+
 summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
 
 def summarize():
