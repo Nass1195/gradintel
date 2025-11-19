@@ -466,3 +466,27 @@ export class UtilsService {
         });
     }
 }
+
+
+export class fileUploadService {
+    /**
+     * Upload File
+     * Upload a file to the server. 
+     * @param data The data for the request.
+     * @param data.file
+     * @returns Message Successful Response
+     * @throws ApiError
+     */
+    public static uploadFile(data: File ): CancelablePromise<{ message: string }> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: '/api/v1/upload/',
+            formData: {
+                file: data,
+            },
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+}
