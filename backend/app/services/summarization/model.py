@@ -1,16 +1,16 @@
 from transformers import pipeline
 from app.services.preprocess import preprocess
 
-summarizer = pipeline("summarization", model="facebook/bart-large-cnn")
+summarizer = pipeline("summarization", model="google/bigbird-pegasus-large-arxiv")
 
-def summarize():
-    preprocessed = preprocess.preprocess_input("backend/app/services/summarization/a.pdf")
-    clean_text = preprocessed["clean_text"]
-
+async def summarize(file):
+    preprocessed = await preprocess.preprocess_input(file)
+    chunks = preprocessed["chunks"]
+    summaries = ""
     # Generate summary
-    summary = summarizer(clean_text, max_length=120, min_length=30, do_sample=False)
+    for chunk in chunks:
+        summary = summarizer(chunk, max_length=150, min_length=30, do_sample=False)
+        summaries += summary[0]['summary_text'] + " "
+        
+    return summaries
 
-    return summary[0]['summary_text']
-
-
-print(summarize())

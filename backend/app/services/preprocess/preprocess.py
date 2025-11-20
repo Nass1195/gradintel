@@ -6,7 +6,8 @@ from nltk import pos_tag, word_tokenize
 from nltk.corpus import stopwords, wordnet
 from nltk.stem import WordNetLemmatizer
 import nltk
-from transformers import pipeline
+from fastapi import UploadFile
+import io
 
 from docx import Document
 
@@ -23,38 +24,40 @@ lemmatizer = WordNetLemmatizer()
 
 stop_words = set(stopwords.words('english'))
 
-def read_file(file_path: Path) -> str:
+async def read_file(file: UploadFile) -> str:
     # Accept either a Path or a string path
-    file_path = Path(file_path)
-    ext = file_path.suffix.lower()
+    file_name = file.filename
+    print(f"Reading file: {file_name}")
+    ext = Path(file_name).suffix.lower()
+    file_bytes = await file.read()
     if ext == '.txt':
-        return read_txt(file_path)
+        return read_txt(file_bytes)
     elif ext == '.pdf':
-        return read_pdf(file_path)
+        return read_pdf(file_bytes)
     elif ext in ['.docx', '.doc']:
-        return read_docx(file_path)
+        return read_docx(file_bytes)
     else:
         raise ValueError(f"Unsupported file format: {ext}")
 
 
-def read_txt(file_path: Path) -> str:
-    with open(file_path, 'r', encoding='utf-8') as f:
-        return f.read()
+def read_txt(file_bytes: bytes) -> str:
+   return file_bytes.decode('utf-8')
     
 
-def read_pdf(file_path: Path) -> str:
+def read_pdf(file_bytes: bytes) -> str:
     text = ""
-    with open(file_path, 'rb') as f:
+    with io.BytesIO(file_bytes) as f:
         reader = pypdf.PdfReader(f)
         for page in reader.pages:
             text += page.extract_text() + "\n"
     return text
 
-def read_docx(file_path: Path) -> str:
-    doc = Document(file_path)
+def read_docx(file_bytes: bytes) -> str:
     text = ""
-    for para in doc.paragraphs:
-        text += para.text + "\n"
+    with io.BytesIO(file_bytes) as f:
+        doc = Document(f)
+        for para in doc.paragraphs:
+            text += para.text + "\n"
     return text
 
 
@@ -102,7 +105,7 @@ def get_wordnet_pos(tag):
 def split_sentences(text):
     return nltk.sent_tokenize(text)
 
-def chunk_text(sentences, max_len=512):
+def chunk_text(sentences, max_len=2000):
     chunks, chunk = [], []
     length = 0
     for sent in sentences:
@@ -131,7 +134,7 @@ def preprocess_text(text):
         "chunks": chunks
     }
 
-def preprocess_input(file_path: Path):
-    raw_text = read_file(file_path)
+async def preprocess_input(file: UploadFile):
+    raw_text = await read_file(file)
     processed_data = preprocess_text(raw_text)
     return processed_data
