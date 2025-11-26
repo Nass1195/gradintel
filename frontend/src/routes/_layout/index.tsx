@@ -1,5 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router"
 import UploadBox from "@/components/ui/UploadBox"
+import { useState} from "react"
 import SummaryResult from "@/components/ui/SummaryResult"
 
 
@@ -10,8 +11,9 @@ export const Route = createFileRoute("/_layout/")({
 
 
 function Dashboard() {
+  const [summary, setSummary] = useState<string>("")
   return (<>
-    <UploadBox />
-    <SummaryResult content="This is a sample summary result displayed after file upload." />
+    <UploadBox onUploadStart={() => setSummary("aa")} onUploadSuccess={(text) => setSummary(text)}/>
+    <SummaryResult content={summary} />
   </>)
 }
