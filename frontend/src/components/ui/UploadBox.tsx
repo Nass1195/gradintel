@@ -2,6 +2,7 @@
 import { Box, Container, Text, Button, VStack, Input } from "@chakra-ui/react"
 import { useState, ChangeEvent } from "react"
 import { fileUploadService } from "@/client"
+import { toaster } from "@/components/ui/toaster"
 
 interface UploadFileProps {
   onUploadStart: () => void;           
@@ -19,7 +20,12 @@ export default function UploadBox({ onUploadStart, onUploadSuccess }: UploadFile
 
     const handleUpload = async () => {
         if (!file) {
-        alert("No file selected")
+        toaster.create({
+            title: "No file selected",
+            description: "Please select a file to upload.",
+            type: "error",
+            duration: 3000,
+        })
         return
         }
 
@@ -32,10 +38,19 @@ export default function UploadBox({ onUploadStart, onUploadSuccess }: UploadFile
             const summary = respond.message
             onUploadSuccess(summary)
     
-            alert("File uploaded successfully!")
+            toaster.create({
+                title: "File uploaded successfully",
+                description: "The file has been summarized.",
+                type: "success",
+                duration: 3000,
+            })
         } catch (error) {
-            console.error("Upload failed:", error)
-            alert("File upload failed. Please try again.")
+            toaster.create({
+                title: "Upload failed",
+                description: "There was an error uploading the file.",
+                type: "error",
+                duration: 3000,
+            })
             setIsLoading(false)
         } finally {
             setIsLoading(false)

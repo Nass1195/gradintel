@@ -12,5 +12,4 @@ async def upload_file(
 ) -> Message:
      print(f"Received file: {file.filename}")
      summary = await summarization_model.summarize(file)
-     print(f"Summary: {summary}")
-     return Message(message=f"File '{file.filename}' uploaded successfully")
+     return Message(message=summary)
