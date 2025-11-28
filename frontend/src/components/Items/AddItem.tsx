@@ -1,4 +1,6 @@
 import {
+  Box,
+  Icon,
   Button,
   DialogActionTrigger,
   DialogTitle,
@@ -72,10 +74,29 @@ const AddItem = () => {
       onOpenChange={({ open }) => setIsOpen(open)}
     >
       <DialogTrigger asChild>
-        <Button value="add-item" my={4}>
-          <FaPlus fontSize="16px" />
-          Add Item
-        </Button>
+         <Box
+             as="button"
+             h="200px"
+             w="20%"
+             border="2px dashed"
+             borderColor="gray.300"
+             rounded="xl"
+             display="flex"
+             flexDirection="column"
+             alignItems="center"
+             justifyContent="center"
+             cursor="pointer"
+             transition="all 0.2s"
+             _hover={{
+               borderColor: "blue.500",
+               bg: "blue.50",
+               transform: "translateY(-2px)",
+             }}
+             color="gray.500"
+           >
+             <Icon as={FaPlus} boxSize={8} mb={2} />
+             <Text fontWeight="bold">Add New Item</Text>
+           </Box>
       </DialogTrigger>
       <DialogContent>
         <form onSubmit={handleSubmit(onSubmit)}>
