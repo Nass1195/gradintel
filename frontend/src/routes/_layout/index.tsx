@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router"
+import { createFileRoute, Link } from "@tanstack/react-router"
 import UploadBox from "@/components/ui/UploadBox"
 import { useState} from "react"
 import SummaryResult from "@/components/ui/SummaryResult"
@@ -38,10 +38,14 @@ function Dashboard() {
       <AddItem/>
       {isLoading && <div>Loading...</div>}
       {!isLoading && items.map((item) => (
-        <ItemCard key={item.id} title={item.title} summarySnippet={item.description || ""} date={item.id} />
+        <Link key={item.id} to="/item/$itemId" params={{itemId: item.id}} search={{page: 1}} style={{ width: "20%", textDecoration: "none" }}>
+           <ItemCard key={item.id} title={item.title} summarySnippet={item.description || ""} date={item.id} />
+        </Link>
+       
       ))
       }
     </div>
+    <text opacity={isPlaceholderData ? 0.5 : 1}>is loading</text>
 
     <UploadBox onUploadStart={() => setSummary("aa")} onUploadSuccess={(text) => setSummary(text)}/>
     <SummaryResult content={summary} />

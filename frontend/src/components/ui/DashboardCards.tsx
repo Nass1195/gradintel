@@ -1,5 +1,5 @@
 import { Box, Text, VStack, Icon, Heading, Badge } from "@chakra-ui/react"
-import { FiPlus, FiFileText, FiClock } from "react-icons/fi" // Make sure to install react-icons or use chakra icons
+import { FiFileText, FiClock } from "react-icons/fi" // Make sure to install react-icons or use chakra icons
 
 
 interface ItemCardProps {
@@ -12,7 +12,7 @@ export const ItemCard = ({ title, summarySnippet, date }: ItemCardProps) => {
   return (
     <Box
       h="200px"
-      w="20%"
+      w="100%"
       border="1px solid"
       borderColor="gray.200"
       rounded="xl"
