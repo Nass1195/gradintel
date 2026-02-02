@@ -3,13 +3,15 @@ import { Box, Container, Text, Button, VStack, Input } from "@chakra-ui/react"
 import { useState, ChangeEvent } from "react"
 import { fileUploadService } from "@/client"
 import { toaster } from "@/components/ui/toaster"
+import { QuizQuestion } from "@/client/types.gen"
 
 interface UploadFileProps {
-  onUploadStart: () => void;           
-  onUploadSuccess: (summary: string) => void; 
+    onUploadStart: () => void;           
+    onUploadSuccess: (summary: string) => void; 
+    onUploadQuizSuccess: (quizes: Array<QuizQuestion>) => void;
 }
 
-export default function UploadBox({ onUploadStart, onUploadSuccess }: UploadFileProps) {
+export default function UploadBox({ onUploadStart, onUploadSuccess, onUploadQuizSuccess }: UploadFileProps) {
     const [file, setFile] = useState<File | null>(null)
     const [isLoading, setIsLoading] = useState(false)
 
@@ -57,6 +59,45 @@ export default function UploadBox({ onUploadStart, onUploadSuccess }: UploadFile
         }
     }
 
+    const handleUploadQuiz = async () => {
+        if (!file) {
+        toaster.create({
+            title: "No file selected",
+            description: "Please select a file to upload.",
+            type: "error",
+            duration: 3000,
+        })
+        return
+        }
+
+        onUploadStart()
+        setIsLoading(true)
+
+
+        try {
+            const respond = await fileUploadService.uploadFileForQuiz(file)
+            const quizes = respond.questions
+            onUploadQuizSuccess(quizes)
+    
+            toaster.create({
+                title: "File uploaded successfully",
+                description: "The file has been summarized.",
+                type: "success",
+                duration: 3000,
+            })
+        } catch (error) {
+            toaster.create({
+                title: "Upload failed",
+                description: "There was an error uploading the file.",
+                type: "error",
+                duration: 3000,
+            })
+            setIsLoading(false)
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
     return (
         <Container maxW="lg" pt={12}>
         <VStack gap={6} border="1px solid #ddd" p={6} rounded="xl">
@@ -84,6 +125,16 @@ export default function UploadBox({ onUploadStart, onUploadSuccess }: UploadFile
                 disabled={!file}
             >
                 Upload & Summarize
+            </Button>
+             <Button 
+                colorScheme="blue" 
+                w="100%" 
+                onClick={handleUploadQuiz}
+                loading={isLoading}
+                loadingText="generating..."
+                disabled={!file}
+            >
+                Upload & quizing
             </Button>
         </VStack>
         </Container>

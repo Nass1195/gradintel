@@ -11,7 +11,7 @@ export default function SummaryResult({ content }: SummaryResultProps) {
   if (!content) return null
 
   return (
-    <Box w="100%"  style={{ paddingTop: "50px", paddingBottom: "50px", minHeight: "100%"}} animation="fadeIn 0.5s">
+    <Box w="100%"  style={{ paddingTop: "50px", paddingBottom: "50px", minHeight: "80%"}} animation="fadeIn 0.5s">
       
 
       <Box 
