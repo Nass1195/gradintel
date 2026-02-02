@@ -232,3 +232,14 @@ export type UtilsTestEmailData = {
 export type UtilsTestEmailResponse = (Message);
 
 export type UtilsHealthCheckResponse = (boolean);
+
+export type QuizQuestion = {
+    id: number;
+    question: string;
+    options: Array<string>;
+    answer: string;
+};
+
+export type QuizResponse = {
+    questions: Array<QuizQuestion>;
+};
