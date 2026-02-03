@@ -1,4 +1,5 @@
 import { QuizQuestion } from "@/client/types.gen"
+import QuizQuestionComponent from '@/components/ui/quizQuestion'
 
 export default function Quizes(quizesQuestions: { quizQuestions: Array<QuizQuestion> }) {
     return (
@@ -7,7 +8,7 @@ export default function Quizes(quizesQuestions: { quizQuestions: Array<QuizQuest
             <h2>Quizes Component</h2>
             <ul>
                 {quizesQuestions.quizQuestions.map((question, index) => (
-                    <li key={index}>{question.question}</li>
+                    <QuizQuestionComponent  question={question} />
                 ))}
             </ul>
         </div>
