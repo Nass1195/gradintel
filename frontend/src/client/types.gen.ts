@@ -237,7 +237,7 @@ export type QuizQuestion = {
     id: number;
     question: string;
     options: Array<string>;
-    answer: string;
+    correct_answer: string;
 };
 
 export type QuizResponse = {
