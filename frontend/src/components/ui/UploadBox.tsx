@@ -3,17 +3,14 @@ import { Box, Icon, Text, Button, VStack, Input, HStack } from "@chakra-ui/react
 import { useState, ChangeEvent } from "react"
 import { fileUploadService } from "@/client"
 import { toaster } from "@/components/ui/toaster"
-import { QuizQuestion } from "@/client/types.gen"
 import { FaCloudUploadAlt, FaFilePdf, FaTrash } from "react-icons/fa"
-import { count } from "console"
 
 interface UploadFileProps {
-    onUploadStart: () => void;           
+    onUploadStart: (selectedFile: File | null) => void;           
     onUploadSuccess: (summary: string) => void; 
-    onUploadQuizSuccess: (quizes: Array<QuizQuestion>) => void;
 }
 
-export default function UploadBox({ onUploadStart, onUploadSuccess, onUploadQuizSuccess }: UploadFileProps) {
+export default function UploadBox({ onUploadStart, onUploadSuccess }: UploadFileProps) {
     const [file, setFile] = useState<File | null>(null)
     const [isUploading, setIsUploading] = useState(false)
 
@@ -36,7 +33,7 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, onUploadQuiz
             return
         }
 
-        onUploadStart()
+        onUploadStart(selectedFile)
         setIsUploading(true)
 
 
@@ -64,48 +61,9 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, onUploadQuiz
         }
     }
 
-    const handleUploadQuiz = async () => {
-        if (!file) {
-        toaster.create({
-            title: "No file selected",
-            description: "Please select a file to upload.",
-            type: "error",
-            duration: 3000,
-        })
-        return
-        }
-
-        onUploadStart()
-        setIsUploading(true)
-
-
-        try {
-            const respond = await fileUploadService.uploadFileForQuiz(file)
-            const quizes = respond.questions
-            onUploadQuizSuccess(quizes)
-    
-            toaster.create({
-                title: "File uploaded successfully",
-                description: "The file has been summarized.",
-                type: "success",
-                duration: 3000,
-            })
-        } catch (error) {
-            toaster.create({
-                title: "Upload failed",
-                description: "There was an error uploading the file.",
-                type: "error",
-                duration: 3000,
-            })
-            setIsUploading(false)
-        } finally {
-            setIsUploading(false)
-        }
-    }
-
     const handleRemoveFile = () => {
         setFile(null)
-        onUploadStart()
+        onUploadStart(file)
     }
 
     return (

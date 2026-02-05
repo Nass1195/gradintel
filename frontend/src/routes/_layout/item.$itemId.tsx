@@ -3,7 +3,6 @@ import  UploadBox  from '@/components/ui/UploadBox'
 import SummaryResult from "@/components/ui/SummaryResult"
 import { Box,  Tabs } from '@chakra-ui/react'
 import Quizes from '@/components/ui/quizes'
-import { QuizQuestion } from "@/client/types.gen"
 import { FaRobot, FaQuestionCircle } from 'react-icons/fa'
 
 
@@ -14,21 +13,18 @@ export const Route = createFileRoute('/_layout/item/$itemId')({
 })
 
 function RouteComponent() {
+  const [file, setFile] = useState<File | null>(null)
   const [summary, setSummary] = useState<string>(" ")
-  const [quizQuestions, setQuizQuestions] = useState<Array<QuizQuestion>>([])
-
-
 
   return (
     <div style={{ display: "flex", flexDirection: "row", gap: "20px", paddingBottom: "20px", marginBottom: "20px", paddingTop: "20px", height: "100%" }}>
       <Box w={{ base: '100%', lg: '35%' }} minW="350px" overflowY="auto" pr={2}>
         <UploadBox
-          onUploadStart={() => {
+          onUploadStart={(selectedFile) => {
             setSummary("")
-            setQuizQuestions([])
+            setFile(selectedFile)
           }}
           onUploadSuccess={(text) => setSummary(text)}
-          onUploadQuizSuccess={(quizes) => setQuizQuestions(quizes)}
         />
         <Box mt={6}>
           <SummaryResult content={summary} />
@@ -63,7 +59,7 @@ function RouteComponent() {
               
           </Tabs.Content>
           <Tabs.Content value="quiz" p={6} flex="1" overflowY="auto">
-            <Quizes quizQuestions={quizQuestions} />
+            <Quizes selectedFile={file} />
           </Tabs.Content>
         </Tabs.Root>
       </Box>

@@ -1,20 +1,47 @@
 import { QuizQuestion } from "@/client/types.gen"
 import QuizQuestionComponent from '@/components/ui/quizQuestion'
-import { VStack, Text, Box } from "@chakra-ui/react"
+import { VStack, Text, Box, Button } from "@chakra-ui/react"
+import { fileUploadService } from "@/client"
+import { useState } from "react";
 
-export default function Quizes(quizesQuestions: { quizQuestions: Array<QuizQuestion> }) {
+type QuizesProps = {
+    selectedFile: File | null;
+};
+
+export default function Quizes({selectedFile }: QuizesProps) {
+    const [quiz, setQuiz] = useState<Array<QuizQuestion>>([])
     
-    if (!quizesQuestions || quizesQuestions.quizQuestions.length === 0) {
-        return (  
-            <Box textAlign="center" py={10}>
-                <Text>No quiz questions generated yet.</Text>
-            </Box>
+    const handleQuizGeneration = async () => {
+        if (!selectedFile) {
+            console.log("No file selected for quiz generation.")
+            return
+        }
+        try {
+            console.log("Generating quiz questions for file:", selectedFile.name)
+            const respond = await fileUploadService.uploadFileForQuiz(selectedFile)
+            const quizes = respond.questions
+            setQuiz(quizes)
+        } catch (error) {
+            console.error("Error generating quiz questions:", error)
+        }    
+    }    
+    if (!quiz || quiz.length === 0) {
+        return ( 
+            <VStack>
+                <Box textAlign="center" py={10}>
+                    <Text>No quiz questions generated yet.</Text>
+                </Box>
+                <Button onClick={handleQuizGeneration}>
+                    Please upload a file to generate quiz questions.
+                </Button>
+            </VStack>
+                
         )
     }
     
     return (
         <VStack align="stretch" gap={4} w="100%">
-            {quizesQuestions.quizQuestions.map((question) => (
+            {quiz.map((question) => (
                 <QuizQuestionComponent  question={question} />
             ))}
         </VStack>
