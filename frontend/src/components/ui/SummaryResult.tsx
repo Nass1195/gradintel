@@ -1,4 +1,5 @@
-import { Box, Text, } from "@chakra-ui/react"
+import { Box, Text, HStack, Button, Heading } from "@chakra-ui/react"
+import { FaCopy} from "react-icons/fa"
 
 interface SummaryResultProps {
   content: string;
@@ -8,7 +9,7 @@ export default function SummaryResult({ content }: SummaryResultProps) {
   
 
   // If there is no content, don't render anything
-  if (!content) return null
+  if (!content  || content.trim() === "") return null
 
   return (
     <Box w="100%"  style={{ paddingTop: "50px", paddingBottom: "50px", minHeight: "80%"}} animation="fadeIn 0.5s">
@@ -16,8 +17,8 @@ export default function SummaryResult({ content }: SummaryResultProps) {
 
       <Box 
         p={5} 
-        rounded="md" 
-        h = "100%"
+        rounded="2xl" 
+        h = "fit-content"
         border="1px solid" 
         borderColor="gray.200"
         maxH="400px"
@@ -25,6 +26,20 @@ export default function SummaryResult({ content }: SummaryResultProps) {
         shadow="inner"
 
       >
+
+        <HStack justify="space-between" mb={4}>
+          <HStack gap={2}>
+            <Heading size="md">Summary</Heading>
+          </HStack>
+          <Button
+            aria-label="Copy summary"
+            variant="ghost"
+            color="gray.400"
+            size="sm"
+          >
+            <FaCopy />
+          </Button>
+        </HStack>
         <Text >
           {content}
         </Text>
