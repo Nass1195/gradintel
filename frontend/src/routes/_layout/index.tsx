@@ -34,7 +34,7 @@ function Dashboard() {
 
   const [summary, setSummary] = useState<string>("")
   return (<>
-    <div style={{ display: "flex", gap: "20px", overflowX: "auto", paddingBottom: "20px", marginBottom: "20px", paddingTop: "20px" }}>
+    <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", paddingBottom: "20px", marginBottom: "20px", paddingTop: "20px" }}>
       <AddItem/>
       {isLoading && <div>Loading...</div>}
       {!isLoading && items.map((item) => (
@@ -45,9 +45,5 @@ function Dashboard() {
       ))
       }
     </div>
-    <text opacity={isPlaceholderData ? 0.5 : 1}>is loading</text>
-
-    <UploadBox onUploadStart={() => setSummary("aa")} onUploadSuccess={(text) => setSummary(text)}/>
-    <SummaryResult content={summary} />
   </>)
 }
