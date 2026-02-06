@@ -477,10 +477,10 @@ export class fileUploadService {
      * @returns Message Successful Response
      * @throws ApiError
      */
-    public static uploadFile(data: File ): CancelablePromise<{ message: string }> {
+    public static uploadFile( itemId:string, data: File): CancelablePromise<{ message: string }> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: '/api/v1/upload/',
+            url: `/api/v1/upload/${itemId}`,
             formData: {
                 file: data,
             },

@@ -1,7 +1,4 @@
 import { createFileRoute, Link } from "@tanstack/react-router"
-import UploadBox from "@/components/ui/UploadBox"
-import { useState} from "react"
-import SummaryResult from "@/components/ui/SummaryResult"
 import { ItemCard } from "@/components/ui/DashboardCards"
 import { ItemsService } from "@/client"
 import { useQuery } from "@tanstack/react-query"
@@ -24,7 +21,7 @@ function getItemsQueryOptions() {
 
 function Dashboard() {
 
-  const { data, isLoading, isPlaceholderData } = useQuery({
+  const { data, isLoading } = useQuery({
       ...getItemsQueryOptions(),
       placeholderData: (prevData) => prevData,
   })
@@ -32,7 +29,6 @@ function Dashboard() {
   const items = data?.data ?? []
 
 
-  const [summary, setSummary] = useState<string>("")
   return (<>
     <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", paddingBottom: "20px", marginBottom: "20px", paddingTop: "20px" }}>
       <AddItem/>

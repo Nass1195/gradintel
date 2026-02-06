@@ -7,10 +7,11 @@ import { FaCloudUploadAlt, FaFilePdf, FaTrash } from "react-icons/fa"
 
 interface UploadFileProps {
     onUploadStart: (selectedFile: File | null) => void;           
-    onUploadSuccess: (summary: string) => void; 
+    onUploadSuccess: (summary: string) => void;
+    itemId: string 
 }
 
-export default function UploadBox({ onUploadStart, onUploadSuccess }: UploadFileProps) {
+export default function UploadBox({ onUploadStart, onUploadSuccess, itemId }: UploadFileProps) {
     const [file, setFile] = useState<File | null>(null)
     const [isUploading, setIsUploading] = useState(false)
 
@@ -38,7 +39,7 @@ export default function UploadBox({ onUploadStart, onUploadSuccess }: UploadFile
 
 
         try {
-            const respond = await fileUploadService.uploadFile(selectedFile)
+            const respond = await fileUploadService.uploadFile(itemId,selectedFile)
             const summary = respond.message
             onUploadSuccess(summary)
     

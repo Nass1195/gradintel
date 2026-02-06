@@ -13,6 +13,7 @@ export const Route = createFileRoute('/_layout/item/$itemId')({
 })
 
 function RouteComponent() {
+  const itemId = Route.useParams().itemId
   const [file, setFile] = useState<File | null>(null)
   const [summary, setSummary] = useState<string>(" ")
 
@@ -25,6 +26,7 @@ function RouteComponent() {
             setFile(selectedFile)
           }}
           onUploadSuccess={(text) => setSummary(text)}
+          itemId={itemId}
         />
         <Box mt={6}>
           <SummaryResult content={summary} />

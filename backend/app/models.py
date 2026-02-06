@@ -2,6 +2,8 @@ import uuid
 
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
+from sqlalchemy import Column, Text
+
 
 
 # Shared properties
@@ -79,6 +81,28 @@ class Item(ItemBase, table=True):
         foreign_key="user.id", nullable=False, ondelete="CASCADE"
     )
     owner: User | None = Relationship(back_populates="items")
+    documents: list["Document"] = Relationship(back_populates="owner", cascade_delete=True)
+
+class DocumentBase(SQLModel):
+    title: str = Field(min_length=1, max_length=255)
+    content: str | None = Field(default=None, sa_column=Column(Text))
+    summary: str | None = Field(default=None, sa_column=Column(Text))
+
+class Document(DocumentBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    owner_id: uuid.UUID = Field(
+        foreign_key="item.id", nullable=False, ondelete="CASCADE"
+    )
+    owner: Item | None = Relationship(back_populates="documents")
+
+
+class DocumentCreate(DocumentBase):
+    pass
+
+class DocumentPublic(SQLModel):
+    title: str
+    summary: str | None
+
 
 
 # Properties to return via API, id is always required

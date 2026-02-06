@@ -3,7 +3,7 @@ import QuizQuestionComponent from '@/components/ui/quizQuestion'
 import { VStack, Text, Box, Button, Flex, IconButton } from "@chakra-ui/react"
 import { fileUploadService } from "@/client"
 import { useState } from "react";
-import { IoRefreshOutline, IoFilterOutline } from "react-icons/io5";
+import { IoRefreshOutline } from "react-icons/io5";
 
 type QuizesProps = {
     selectedFile: File | null;
