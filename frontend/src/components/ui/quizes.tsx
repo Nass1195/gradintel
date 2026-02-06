@@ -6,22 +6,17 @@ import { useState } from "react";
 import { IoRefreshOutline } from "react-icons/io5";
 
 type QuizesProps = {
-    selectedFile: File | null;
+    itemId: string
 };
 
-export default function Quizes({selectedFile }: QuizesProps) {
+export default function Quizes({ itemId }: QuizesProps) {
     const [quiz, setQuiz] = useState<Array<QuizQuestion>>([])
     const [isLoading, setIsLoading] = useState<boolean>(false)
     
     const handleQuizGeneration = async () => {
-        if (!selectedFile) {
-            console.log("No file selected for quiz generation.")
-            return
-        }
         setIsLoading(true)
         try {
-            console.log("Generating quiz questions for file:", selectedFile.name)
-            const respond = await fileUploadService.uploadFileForQuiz(selectedFile)
+            const respond = await fileUploadService.uploadFileForQuiz(itemId)
             const quizes = respond.questions
             setQuiz(quizes)
             setIsLoading(false)
@@ -36,7 +31,7 @@ export default function Quizes({selectedFile }: QuizesProps) {
                     <Text>No quiz questions generated yet.</Text>
                 </Box>
                 <Button onClick={handleQuizGeneration} loading={isLoading}>
-                    Please upload a file to generate quiz questions.
+                    generate quiz questions
                 </Button>
             </VStack>
                 

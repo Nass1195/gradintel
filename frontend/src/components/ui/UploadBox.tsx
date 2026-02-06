@@ -8,14 +8,13 @@ import { DocumentPublic } from '@/client/types.gen'
 
 
 interface UploadFileProps {
-    onUploadStart: (selectedFile: File | null) => void;           
+    onUploadStart: () => void;           
     onUploadSuccess: (document: DocumentPublic) => void;
     itemId: string
     document: DocumentPublic | null 
 }
 
 export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, document }: UploadFileProps) {
-    const [file, setFile] = useState<File | null>(null)
     const [isUploading, setIsUploading] = useState(false)
     const [savedDocument, setSavedDocument] = useState<DocumentPublic | null>(null)
 
@@ -28,7 +27,6 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, docu
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         const selected = e.target.files?.[0]
         if (selected){
-            setFile(selected)
             handleUpload(selected)
         }
     }
@@ -44,7 +42,7 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, docu
             return
         }
 
-        onUploadStart(selectedFile)
+        onUploadStart()
         setIsUploading(true)
 
 
@@ -74,11 +72,10 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, docu
     }
 
     const handleRemoveFile = () => {
-        setFile(null)
         setSavedDocument(null)
-        onUploadStart(file)
+        onUploadStart()
         if (document?.id) {
-            fileUploadService.deleteFile(document?.id).catch((error) => {
+            fileUploadService.deleteFile(document?.id).catch(() => {
                 toaster.create({
                     title: "Delete failed",
                     description: "There was an error deleting the file.",

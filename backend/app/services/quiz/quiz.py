@@ -1,4 +1,3 @@
-from app.services.preprocess import preprocess
 from app.services import llmModel
 import json
 from pydantic import BaseModel
@@ -14,11 +13,10 @@ class QuizQuestion(BaseModel):
 class QuizResponse(BaseModel):
     questions: list[QuizQuestion]
     
-async def generate_quiz(file):
-    preprocessed = await preprocess.preprocess_input(file)
-    clean_text = preprocessed["clean_text"]
+async def generate_quiz(text):
     
-    quiz_questions = await generate_quiz_questions(clean_text, num_questions=5)
+    
+    quiz_questions = await generate_quiz_questions(text, num_questions=5)
 
     try: 
         quiz_response = QuizResponse(questions=quiz_questions)

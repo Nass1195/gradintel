@@ -47,10 +47,14 @@ def delete_item(
      session.commit()
      return Message(message="Document deleted successfully")
 
-@router.post("/quiz", response_model=quiz_model.QuizResponse)
+@router.get("/quiz/{id}", response_model=quiz_model.QuizResponse)
 async def generate_quiz_endpoint(
-     *, session: SessionDep, current_user: CurrentUser,file: UploadFile = File(...)
+     *, session: SessionDep, current_user: CurrentUser, id: UUID
 ) -> quiz_model.QuizResponse:
-     print(f"Received file for quiz generation: {file.filename}")
-     quiz = await quiz_model.generate_quiz(file)
+     print(f"Received file for quiz generation")
+     statment = select(Document).where(Document.owner_id == id)
+     document = session.exec(statment).one_or_none()
+     if not document:
+          raise HTTPException(status_code=404, detail="Document not found")
+     quiz = await quiz_model.generate_quiz(document.content)
      return quiz

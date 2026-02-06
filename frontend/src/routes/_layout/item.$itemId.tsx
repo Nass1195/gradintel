@@ -16,7 +16,6 @@ export const Route = createFileRoute('/_layout/item/$itemId')({
 
 function RouteComponent() {
   const itemId = Route.useParams().itemId
-  const [file, setFile] = useState<File | null>(null)
   const [document, setDocument] = useState<DocumentPublic | null>(null)
 
   useEffect(() => {
@@ -35,8 +34,7 @@ function RouteComponent() {
     <div style={{ display: "flex", flexDirection: "row", gap: "20px", paddingBottom: "20px", marginBottom: "20px", paddingTop: "20px", height: "100%" }}>
       <Box w={{ base: '100%', lg: '35%' }} minW="350px" overflowY="auto" pr={2}>
         <UploadBox
-          onUploadStart={(selectedFile) => {
-            setFile(selectedFile)
+          onUploadStart={() => {
           }}
           onUploadSuccess={(savedDocument) => setDocument(savedDocument)}
           itemId={itemId}
@@ -75,7 +73,7 @@ function RouteComponent() {
               
           </Tabs.Content>
           <Tabs.Content value="quiz" p={6} flex="1" overflowY="auto">
-            <Quizes selectedFile={file} />
+            <Quizes itemId={itemId}/>
           </Tabs.Content>
         </Tabs.Root>
       </Box>
