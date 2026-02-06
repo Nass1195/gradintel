@@ -34,7 +34,8 @@ function RouteComponent() {
     <div style={{ display: "flex", flexDirection: "row", gap: "20px", paddingBottom: "20px", marginBottom: "20px", paddingTop: "20px", height: "100%" }}>
       <Box w={{ base: '100%', lg: '35%' }} minW="350px" overflowY="auto" pr={2}>
         <UploadBox
-          onUploadStart={() => {
+          onUploadStart={(doc) => {
+            setDocument(doc)
           }}
           onUploadSuccess={(savedDocument) => setDocument(savedDocument)}
           itemId={itemId}

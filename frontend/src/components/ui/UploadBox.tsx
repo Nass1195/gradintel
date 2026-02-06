@@ -8,7 +8,7 @@ import { DocumentPublic } from '@/client/types.gen'
 
 
 interface UploadFileProps {
-    onUploadStart: () => void;           
+    onUploadStart: (doc: DocumentPublic | null) => void;           
     onUploadSuccess: (document: DocumentPublic) => void;
     itemId: string
     document: DocumentPublic | null 
@@ -42,7 +42,13 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, docu
             return
         }
 
-        onUploadStart()
+        const doc: DocumentPublic = {
+            id: "",
+            title: selectedFile.name,
+            summary: "generating summary...",
+        }
+        setSavedDocument(doc)
+        onUploadStart(doc)
         setIsUploading(true)
 
 
@@ -73,7 +79,7 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, docu
 
     const handleRemoveFile = () => {
         setSavedDocument(null)
-        onUploadStart()
+        onUploadStart(null)
         if (document?.id) {
             fileUploadService.deleteFile(document?.id).catch(() => {
                 toaster.create({
