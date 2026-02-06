@@ -20,10 +20,10 @@ def read_document(id: UUID, session: SessionDep, current_user: CurrentUser) -> A
      
      return document
 
-@router.post("/{item_id}", response_model=Message)
+@router.post("/{item_id}", response_model=DocumentPublic)
 async def upload_file(
      *,item_id: UUID , session: SessionDep, current_user: CurrentUser,file: UploadFile = File(...)
-) -> Message:
+) -> Any:
      print(f"Received file: {file.filename}")
      text = await preprocess.read_file(file)
      file.file.seek(0)
@@ -33,8 +33,19 @@ async def upload_file(
      session.add(db_document)
      session.commit()
      session.refresh(db_document)
-     return Message(message=summary)
+     return db_document
 
+
+@router.delete("/{id}")
+def delete_item(
+    session: SessionDep, current_user: CurrentUser, id: UUID
+) -> Message:
+     document = session.get(Document, id)
+     if not document:
+          raise HTTPException(status_code=404, detail="Document not found")
+     session.delete(document)
+     session.commit()
+     return Message(message="Document deleted successfully")
 
 @router.post("/quiz", response_model=quiz_model.QuizResponse)
 async def generate_quiz_endpoint(

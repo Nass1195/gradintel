@@ -2,14 +2,11 @@ import { Box, Text, HStack, Button, Heading } from "@chakra-ui/react"
 import { FaCopy} from "react-icons/fa"
 
 interface SummaryResultProps {
-  content: string;
+  content: string | null | undefined;
 }
 
 export default function SummaryResult({ content }: SummaryResultProps) {
   
-
-  // If there is no content, don't render anything
-  if (!content  || content.trim() === "") return null
 
   return (
     <Box w="100%"  style={{ paddingTop: "50px", paddingBottom: "50px", minHeight: "80%"}} animation="fadeIn 0.5s">
@@ -41,7 +38,7 @@ export default function SummaryResult({ content }: SummaryResultProps) {
           </Button>
         </HStack>
         <Text >
-          {content}
+          {!content || content.trim() === "" ? "No summary available." : content}
         </Text>
       </Box>
     </Box>

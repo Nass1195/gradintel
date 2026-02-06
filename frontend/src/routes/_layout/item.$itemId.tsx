@@ -17,19 +17,15 @@ export const Route = createFileRoute('/_layout/item/$itemId')({
 function RouteComponent() {
   const itemId = Route.useParams().itemId
   const [file, setFile] = useState<File | null>(null)
-  const [summary, setSummary] = useState<string>(" ")
   const [document, setDocument] = useState<DocumentPublic | null>(null)
 
   useEffect(() => {
     const fetchFile = async () => {
       try {
         const response = await fileUploadService.getFile(itemId)
-        const summary = response.summary || "No summary available."
-        setSummary(summary)
         setDocument(response)
       } catch (error) {
         console.error("Error fetching file summary:", error)
-        setSummary("Failed to load summary.")
       }
     } 
     fetchFile()
@@ -40,15 +36,14 @@ function RouteComponent() {
       <Box w={{ base: '100%', lg: '35%' }} minW="350px" overflowY="auto" pr={2}>
         <UploadBox
           onUploadStart={(selectedFile) => {
-            setSummary("")
             setFile(selectedFile)
           }}
-          onUploadSuccess={(text) => setSummary(text)}
+          onUploadSuccess={(savedDocument) => setDocument(savedDocument)}
           itemId={itemId}
           document={document}
         />
         <Box mt={6}>
-          <SummaryResult content={summary} />
+          <SummaryResult content={document?.summary} />
         </Box>
       </Box>
 

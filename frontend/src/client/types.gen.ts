@@ -245,6 +245,7 @@ export type QuizResponse = {
 };
 
 export type DocumentPublic = {
+    id: string;
     title: string;
     summary?: (string | null);
 }

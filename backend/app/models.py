@@ -100,6 +100,7 @@ class DocumentCreate(DocumentBase):
     pass
 
 class DocumentPublic(SQLModel):
+    id: uuid.UUID
     title: str
     summary: str | None
 

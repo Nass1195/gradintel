@@ -1,6 +1,6 @@
 
 import { Box, Icon, Text, Button, VStack, Input, HStack } from "@chakra-ui/react"
-import { useState, ChangeEvent } from "react"
+import { useState, ChangeEvent, useEffect } from "react"
 import { fileUploadService } from "@/client"
 import { toaster } from "@/components/ui/toaster"
 import { FaCloudUploadAlt, FaFilePdf, FaTrash } from "react-icons/fa"
@@ -9,7 +9,7 @@ import { DocumentPublic } from '@/client/types.gen'
 
 interface UploadFileProps {
     onUploadStart: (selectedFile: File | null) => void;           
-    onUploadSuccess: (summary: string) => void;
+    onUploadSuccess: (document: DocumentPublic) => void;
     itemId: string
     document: DocumentPublic | null 
 }
@@ -17,6 +17,13 @@ interface UploadFileProps {
 export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, document }: UploadFileProps) {
     const [file, setFile] = useState<File | null>(null)
     const [isUploading, setIsUploading] = useState(false)
+    const [savedDocument, setSavedDocument] = useState<DocumentPublic | null>(null)
+
+    useEffect(() => {
+        if (document) {
+            setSavedDocument(document)
+        }
+    }, [document])
 
     const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
         const selected = e.target.files?.[0]
@@ -43,8 +50,9 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, docu
 
         try {
             const respond = await fileUploadService.uploadFile(itemId,selectedFile)
-            const summary = respond.message
-            onUploadSuccess(summary)
+            const document = respond
+            setSavedDocument(document)
+            onUploadSuccess(document)
     
             toaster.create({
                 title: "File uploaded successfully",
@@ -67,7 +75,18 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, docu
 
     const handleRemoveFile = () => {
         setFile(null)
+        setSavedDocument(null)
         onUploadStart(file)
+        if (document?.id) {
+            fileUploadService.deleteFile(document?.id).catch((error) => {
+                toaster.create({
+                    title: "Delete failed",
+                    description: "There was an error deleting the file.",
+                    type: "error",
+                    duration: 3000,
+                })
+            })
+        }
     }
 
     return (
@@ -86,7 +105,7 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, docu
                 </Text>
             </HStack>
 
-            {!document ? (
+            {!savedDocument ? (
                 <Box
                     border="2px dashed"
                     rounded="xl"
@@ -133,8 +152,8 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, docu
                                 <Icon as={FaFilePdf} boxSize={5} color="red.500" />
                             </Box>
                             <VStack align="start" gap={0}>
-                                <Text fontWeight="medium" >{document.title}</Text>
-                                
+                                <Text fontWeight="medium" >{savedDocument.title}</Text>
+                                <Text fontSize="sm">{isUploading ? "Processing..." : "Uploaded just now"} </Text>
                             </VStack>
                         </HStack>
                         <Button

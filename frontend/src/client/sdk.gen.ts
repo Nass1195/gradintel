@@ -477,7 +477,7 @@ export class fileUploadService {
      * @returns Message Successful Response
      * @throws ApiError
      */
-    public static uploadFile( itemId:string, data: File): CancelablePromise<{ message: string }> {
+    public static uploadFile( itemId:string, data: File): CancelablePromise<DocumentPublic> {
         return __request(OpenAPI, {
             method: 'POST',
             url: `/api/v1/upload/${itemId}`,
@@ -514,6 +514,16 @@ export class fileUploadService {
     public static getFile(itemId: string): CancelablePromise<DocumentPublic> {
         return __request(OpenAPI, {
             method: 'GET',
+            url: `/api/v1/upload/${itemId}`,
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+
+    public static deleteFile(itemId: string): CancelablePromise<{ message: string}> {
+        return __request(OpenAPI, {
+            method: 'DELETE',
             url: `/api/v1/upload/${itemId}`,
             errors: {
                 422: 'Validation Error'
