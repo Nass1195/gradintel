@@ -243,3 +243,8 @@ export type QuizQuestion = {
 export type QuizResponse = {
     questions: Array<QuizQuestion>;
 };
+
+export type DocumentPublic = {
+    title: string;
+    summary?: (string | null);
+}

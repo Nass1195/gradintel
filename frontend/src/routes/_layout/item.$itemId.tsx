@@ -1,12 +1,14 @@
 import { createFileRoute } from '@tanstack/react-router'
 import  UploadBox  from '@/components/ui/UploadBox'
 import SummaryResult from "@/components/ui/SummaryResult"
-import { Box,  Tabs } from '@chakra-ui/react'
+import { Box, Tabs } from '@chakra-ui/react'
 import Quizes from '@/components/ui/quizes'
 import { FaRobot, FaQuestionCircle } from 'react-icons/fa'
+import { DocumentPublic } from '@/client/types.gen'
+import { fileUploadService } from '@/client'
 
 
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export const Route = createFileRoute('/_layout/item/$itemId')({
   component: RouteComponent,
@@ -16,7 +18,23 @@ function RouteComponent() {
   const itemId = Route.useParams().itemId
   const [file, setFile] = useState<File | null>(null)
   const [summary, setSummary] = useState<string>(" ")
+  const [document, setDocument] = useState<DocumentPublic | null>(null)
 
+  useEffect(() => {
+    const fetchFile = async () => {
+      try {
+        const response = await fileUploadService.getFile(itemId)
+        const summary = response.summary || "No summary available."
+        setSummary(summary)
+        setDocument(response)
+      } catch (error) {
+        console.error("Error fetching file summary:", error)
+        setSummary("Failed to load summary.")
+      }
+    } 
+    fetchFile()
+  }, [itemId])
+  
   return (
     <div style={{ display: "flex", flexDirection: "row", gap: "20px", paddingBottom: "20px", marginBottom: "20px", paddingTop: "20px", height: "100%" }}>
       <Box w={{ base: '100%', lg: '35%' }} minW="350px" overflowY="auto" pr={2}>
@@ -27,6 +45,7 @@ function RouteComponent() {
           }}
           onUploadSuccess={(text) => setSummary(text)}
           itemId={itemId}
+          document={document}
         />
         <Box mt={6}>
           <SummaryResult content={summary} />

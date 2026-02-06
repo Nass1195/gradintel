@@ -4,14 +4,17 @@ import { useState, ChangeEvent } from "react"
 import { fileUploadService } from "@/client"
 import { toaster } from "@/components/ui/toaster"
 import { FaCloudUploadAlt, FaFilePdf, FaTrash } from "react-icons/fa"
+import { DocumentPublic } from '@/client/types.gen'
+
 
 interface UploadFileProps {
     onUploadStart: (selectedFile: File | null) => void;           
     onUploadSuccess: (summary: string) => void;
-    itemId: string 
+    itemId: string
+    document: DocumentPublic | null 
 }
 
-export default function UploadBox({ onUploadStart, onUploadSuccess, itemId }: UploadFileProps) {
+export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, document }: UploadFileProps) {
     const [file, setFile] = useState<File | null>(null)
     const [isUploading, setIsUploading] = useState(false)
 
@@ -83,7 +86,7 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, itemId }: Up
                 </Text>
             </HStack>
 
-            {!file ? (
+            {!document ? (
                 <Box
                     border="2px dashed"
                     rounded="xl"
@@ -130,8 +133,8 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, itemId }: Up
                                 <Icon as={FaFilePdf} boxSize={5} color="red.500" />
                             </Box>
                             <VStack align="start" gap={0}>
-                                <Text fontWeight="medium" >{file.name}</Text>
-                                <Text fontSize="xs">{(file.size / 1024 / 1024).toFixed(1)} MB • {isUploading ? "Processing..." : "Uploaded just now"}</Text>
+                                <Text fontWeight="medium" >{document.title}</Text>
+                                
                             </VStack>
                         </HStack>
                         <Button
