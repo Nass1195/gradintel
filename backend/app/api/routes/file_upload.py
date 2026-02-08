@@ -3,22 +3,22 @@ from typing import Any
 from uuid import UUID
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from app.api.deps import CurrentUser, SessionDep
-from app.models import Message, Document, DocumentCreate, DocumentPublic
+from app.models import Message, Document, DocumentCreate, DocumentPublic, DocumentsPublic
 from app.services.preprocess import preprocess
 from app.services.summarization import model as summarization_model
 from app.services.quiz import quiz as quiz_model
 
 router = APIRouter(prefix="/upload", tags=["file_upload"])
 
-@router.get("/{id}", response_model=DocumentPublic)
+@router.get("/{id}", response_model=DocumentsPublic)
 def read_document(id: UUID, session: SessionDep, current_user: CurrentUser) -> Any:
    
      statment = select(Document).where(Document.owner_id == id)
-     document = session.exec(statment).one_or_none()
-     if not document:
+     documents = session.exec(statment).all()
+     if not documents:
         raise HTTPException(status_code=404, detail="Document not found")
      
-     return document
+     return DocumentsPublic(data=documents)
 
 @router.post("/{item_id}", response_model=DocumentPublic)
 async def upload_file(

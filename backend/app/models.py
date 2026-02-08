@@ -104,6 +104,9 @@ class DocumentPublic(SQLModel):
     title: str
     summary: str | None
 
+class DocumentsPublic(SQLModel):
+    data: list[DocumentPublic]
+
 
 
 # Properties to return via API, id is always required

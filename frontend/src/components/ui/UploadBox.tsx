@@ -8,15 +8,15 @@ import { DocumentPublic } from '@/client/types.gen'
 
 
 interface UploadFileProps {
-    onUploadStart: (doc: DocumentPublic | null) => void;           
-    onUploadSuccess: (document: DocumentPublic) => void;
+    onUploadStart: (doc: Array<DocumentPublic>) => void;           
+    onUploadSuccess: (document: Array<DocumentPublic>) => void;
     itemId: string
-    document: DocumentPublic | null 
+    document: Array<DocumentPublic> 
 }
 
 export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, document }: UploadFileProps) {
     const [isUploading, setIsUploading] = useState(false)
-    const [savedDocument, setSavedDocument] = useState<DocumentPublic | null>(null)
+    const [savedDocument, setSavedDocument] = useState<Array<DocumentPublic>>([])
 
     useEffect(() => {
         if (document) {
@@ -47,16 +47,21 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, docu
             title: selectedFile.name,
             summary: "generating summary...",
         }
-        setSavedDocument(doc)
-        onUploadStart(doc)
+        const newDocuments = [...savedDocument]
+        newDocuments.push(doc)
+        setSavedDocument(newDocuments)
+        onUploadStart(newDocuments)
         setIsUploading(true)
 
 
         try {
             const respond = await fileUploadService.uploadFile(itemId,selectedFile)
             const document = respond
-            setSavedDocument(document)
-            onUploadSuccess(document)
+            const newDocuments = [...savedDocument]
+            newDocuments.pop() 
+            newDocuments.push(document)
+            setSavedDocument(newDocuments)
+            onUploadSuccess(newDocuments)
     
             toaster.create({
                 title: "File uploaded successfully",
@@ -77,9 +82,11 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, docu
         }
     }
 
-    const handleRemoveFile = () => {
-        setSavedDocument(null)
-        onUploadStart(null)
+    const handleRemoveFile = (index: number) => {
+        const document = savedDocument[index]
+        const newDocuments = savedDocument.filter((_, i) => i !== index)
+        setSavedDocument(newDocuments)
+        onUploadStart(newDocuments)
         if (document?.id) {
             fileUploadService.deleteFile(document?.id).catch(() => {
                 toaster.create({
@@ -108,7 +115,7 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, docu
                 </Text>
             </HStack>
 
-            {!savedDocument ? (
+            <Box>
                 <Box
                     border="2px dashed"
                     rounded="xl"
@@ -116,6 +123,7 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, docu
                     textAlign="center"
                     cursor="pointer"
                     position="relative"
+                    mb={4}
                 >
                     <Input 
                         type="file"
@@ -136,39 +144,44 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, docu
                         </VStack>
                     </VStack>
                 </Box>
-            ) : (
-                <Box
-                    border="1px solid"
-                    rounded="xl"
-                    p={4}
-                >
-                    <HStack justify="space-between">
-                        <HStack gap={3}>
-                            <Box
-                                bg="red.100"
-                                p={2}
-                                rounded="lg"
-                                display="flex"
-                                alignItems="center"
-                                justifyContent="center"
+                {savedDocument.map((doc, index) => (
+                    <Box
+                        border="1px solid"
+                        rounded="xl"
+                        p={4}
+                        mb={3}
+                    >
+                        <HStack justify="space-between">
+                            <HStack gap={3}>
+                                <Box
+                                    bg="red.100"
+                                    p={2}
+                                    rounded="lg"
+                                    display="flex"
+                                    alignItems="center"
+                                    justifyContent="center"
+                                >
+                                    <Icon as={FaFilePdf} boxSize={5} color="red.500" />
+                                </Box>
+                                <VStack align="start" gap={0}>
+                                    <Text fontWeight="medium" >{doc.title}</Text>
+                                    <Text fontSize="sm">{isUploading ? "Processing..." : "Uploaded just now"} </Text>
+                                </VStack>
+                            </HStack>
+                            <Button
+                                onClick={() => handleRemoveFile(index)}
+                                bg="transparent"
                             >
-                                <Icon as={FaFilePdf} boxSize={5} color="red.500" />
-                            </Box>
-                            <VStack align="start" gap={0}>
-                                <Text fontWeight="medium" >{savedDocument.title}</Text>
-                                <Text fontSize="sm">{isUploading ? "Processing..." : "Uploaded just now"} </Text>
-                            </VStack>
+                                <FaTrash />
+                            </Button>
                         </HStack>
-                        <Button
-                            onClick={handleRemoveFile}
-                            bg="transparent"
-                        >
-                            <FaTrash />
-                        </Button>
-                    </HStack>
-                </Box>
+                    </Box>
+                ))}
 
-            )}
+            </Box>
+
+           
+           
             
             
         </Box>

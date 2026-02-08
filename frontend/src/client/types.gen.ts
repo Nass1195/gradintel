@@ -249,3 +249,7 @@ export type DocumentPublic = {
     title: string;
     summary?: (string | null);
 }
+
+export type DocumentsPublic = {
+    data: Array<DocumentPublic>;
+}
