@@ -52,9 +52,5 @@ async def generate_quiz_endpoint(
      *, session: SessionDep, current_user: CurrentUser, id: UUID
 ) -> quiz_model.QuizResponse:
      print(f"Received file for quiz generation")
-     statment = select(Document).where(Document.owner_id == id)
-     document = session.exec(statment).one_or_none()
-     if not document:
-          raise HTTPException(status_code=404, detail="Document not found")
-     quiz = await quiz_model.generate_quiz(document.content)
+     quiz = await quiz_model.generate_quiz(id, session)
      return quiz

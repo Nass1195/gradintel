@@ -1,6 +1,10 @@
 from app.services import llmModel
 import json
 from pydantic import BaseModel
+import re
+from sqlmodel import select
+from app.models import Document
+from app.api.deps import SessionDep
 
 
 
@@ -12,10 +16,20 @@ class QuizQuestion(BaseModel):
 
 class QuizResponse(BaseModel):
     questions: list[QuizQuestion]
+
+
+def retrieve_text_from_db(item_id: str, session: SessionDep):
+    statment = select(Document).where(Document.owner_id == item_id)
+    documents = session.exec(statment).all()
+    if not documents:
+        raise ValueError("Document not found")
+    return documents
+
     
-async def generate_quiz(text):
+async def generate_quiz(item_id: str, session: SessionDep):
     
-    
+    documents = retrieve_text_from_db(item_id, session)
+    text = "\n\n".join(doc.content for doc in documents)
     quiz_questions = await generate_quiz_questions(text, num_questions=5)
 
     try: 
@@ -34,6 +48,12 @@ async def generate_quiz(text):
 
 
 
+def clean_quiz_response(raw_response):
+    clean_text = re.sub(r'```json', '', raw_response)
+    clean_text = re.sub(r'```', '', clean_text)
+    return clean_text.strip()
+    
+    
 
 async def generate_quiz_questions(text, num_questions=5):
 
@@ -68,10 +88,11 @@ async def generate_quiz_questions(text, num_questions=5):
     ]
     
     responses = await llmModel.generate_text(messages, max_length=1024)
+    cleaned_response = clean_quiz_response(responses)
 
     try:
-        quiz_data = json.loads(responses)
+        quiz_data = json.loads(cleaned_response)
     except json.JSONDecodeError:
-        print("Raw output:", responses)
+        print("Raw output:", cleaned_response)
     print("Quiz Generation Responses:", quiz_data)
     return quiz_data
