@@ -1,6 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
 import  UploadBox  from '@/components/ui/UploadBox'
 import SummaryResult from "@/components/ui/SummaryResult"
+import Chatbot from "@/components/ui/chatbot"
 import { Box, Tabs } from '@chakra-ui/react'
 import Quizes from '@/components/ui/quizes'
 import { FaRobot, FaQuestionCircle } from 'react-icons/fa'
@@ -71,7 +72,7 @@ function RouteComponent() {
           </Box>
 
           <Tabs.Content value="chat" p={0} flex="1" overflow="hidden">
-              
+              <Chatbot />
           </Tabs.Content>
           <Tabs.Content value="quiz" p={6} flex="1" overflowY="auto">
             <Quizes itemId={itemId}/>

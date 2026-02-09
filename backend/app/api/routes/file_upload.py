@@ -7,8 +7,17 @@ from app.models import Message, Document, DocumentCreate, DocumentPublic, Docume
 from app.services.preprocess import preprocess
 from app.services.summarization import model as summarization_model
 from app.services.quiz import quiz as quiz_model
+from app.services.chatbot import chatbot 
 
 router = APIRouter(prefix="/upload", tags=["file_upload"])
+
+@router.post("/chat", response_model=Message)
+async def chat_with_document(
+     *, session: SessionDep, current_user: CurrentUser, user_input: Message
+) -> Message:
+     print(f"Received chat request for item_id: with user input: {user_input.message}")
+     response = await chatbot.generate_chat_response(user_input.message)
+     return Message(message=response)
 
 @router.get("/{id}", response_model=DocumentsPublic)
 def read_document(id: UUID, session: SessionDep, current_user: CurrentUser) -> Any:

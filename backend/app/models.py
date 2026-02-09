@@ -83,6 +83,17 @@ class Item(ItemBase, table=True):
     owner: User | None = Relationship(back_populates="items")
     documents: list["Document"] = Relationship(back_populates="owner", cascade_delete=True)
 
+
+# Properties to return via API, id is always required
+class ItemPublic(ItemBase):
+    id: uuid.UUID
+    owner_id: uuid.UUID
+
+
+class ItemsPublic(SQLModel):
+    data: list[ItemPublic]
+    count: int
+
 class DocumentBase(SQLModel):
     title: str = Field(min_length=1, max_length=255)
     content: str | None = Field(default=None, sa_column=Column(Text))
@@ -106,18 +117,6 @@ class DocumentPublic(SQLModel):
 
 class DocumentsPublic(SQLModel):
     data: list[DocumentPublic]
-
-
-
-# Properties to return via API, id is always required
-class ItemPublic(ItemBase):
-    id: uuid.UUID
-    owner_id: uuid.UUID
-
-
-class ItemsPublic(SQLModel):
-    data: list[ItemPublic]
-    count: int
 
 
 # Generic message
