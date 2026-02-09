@@ -1,11 +1,24 @@
 import { Box, Text, HStack, Button, Heading } from "@chakra-ui/react"
 import { FaCopy} from "react-icons/fa"
+import { toaster } from "@/components/ui/toaster"
 
 interface SummaryResultProps {
   content: string | null | undefined;
 }
 
 export default function SummaryResult({ content }: SummaryResultProps) {
+
+  const handelCopySummary = async () => {
+    if (!content) {
+      return
+    }
+    await navigator.clipboard.writeText(content)
+    toaster.create({
+      title: "Summary copied to clipboard",
+      type: "success",
+      duration: 3000,
+    })
+  }
   
 
   return (
@@ -33,6 +46,7 @@ export default function SummaryResult({ content }: SummaryResultProps) {
             variant="ghost"
             color="gray.400"
             size="sm"
+            onClick={handelCopySummary}
           >
             <FaCopy />
           </Button>

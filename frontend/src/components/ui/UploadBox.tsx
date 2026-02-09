@@ -15,7 +15,6 @@ interface UploadFileProps {
 }
 
 export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, document }: UploadFileProps) {
-    const [isUploading, setIsUploading] = useState(false)
     const [savedDocument, setSavedDocument] = useState<Array<DocumentPublic>>([])
 
     useEffect(() => {
@@ -51,14 +50,12 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, docu
         newDocuments.push(doc)
         setSavedDocument(newDocuments)
         onUploadStart(newDocuments)
-        setIsUploading(true)
 
 
         try {
             const respond = await fileUploadService.uploadFile(itemId,selectedFile)
             const document = respond
             const newDocuments = [...savedDocument]
-            newDocuments.pop() 
             newDocuments.push(document)
             setSavedDocument(newDocuments)
             onUploadSuccess(newDocuments)
@@ -76,9 +73,7 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, docu
                 type: "error",
                 duration: 3000,
             })
-            setIsUploading(false)
         } finally {
-            setIsUploading(false)
         }
     }
 
@@ -165,7 +160,7 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, docu
                                 </Box>
                                 <VStack align="start" gap={0}>
                                     <Text fontWeight="medium" >{doc.title}</Text>
-                                    <Text fontSize="sm">{isUploading ? "Processing..." : "Uploaded just now"} </Text>
+                                    <Text fontSize="sm">{doc.id == "" ? "Processing..." : "Uploaded just now"} </Text>
                                 </VStack>
                             </HStack>
                             <Button
