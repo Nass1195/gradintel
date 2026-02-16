@@ -3,7 +3,7 @@ from typing import Any
 from uuid import UUID
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from app.api.deps import CurrentUser, SessionDep
-from app.models import Message, Document, DocumentCreate, DocumentPublic, DocumentsPublic
+from app.models import Message, Document, DocumentCreate, DocumentPublic, DocumentsPublic, UploadResponse
 from app.services.preprocess import preprocess
 from app.services.summarization import model as summarization_model
 from app.services.quiz import quiz as quiz_model
@@ -19,6 +19,9 @@ async def chat_with_document(
      response = await chatbot.generate_chat_response(user_input.message)
      return Message(message=response)
 
+
+
+
 @router.get("/{id}", response_model=DocumentsPublic)
 def read_document(id: UUID, session: SessionDep, current_user: CurrentUser) -> Any:
    
@@ -29,7 +32,10 @@ def read_document(id: UUID, session: SessionDep, current_user: CurrentUser) -> A
      
      return DocumentsPublic(data=documents)
 
-@router.post("/{item_id}", response_model=DocumentPublic)
+
+
+
+@router.post("/{item_id}", response_model=UploadResponse)
 async def upload_file(
      *,item_id: UUID , session: SessionDep, current_user: CurrentUser,file: UploadFile = File(...)
 ) -> Any:
@@ -42,7 +48,13 @@ async def upload_file(
      session.add(db_document)
      session.commit()
      session.refresh(db_document)
-     return db_document
+
+     item_summary = summarization_model.generate_item_summry(item_id, session)
+
+     return UploadResponse( document=db_document, summary=item_summary)
+
+
+
 
 
 @router.delete("/{id}")
@@ -55,6 +67,10 @@ def delete_item(
      session.delete(document)
      session.commit()
      return Message(message="Document deleted successfully")
+
+
+
+
 
 @router.get("/quiz/{id}", response_model=quiz_model.QuizResponse)
 async def generate_quiz_endpoint(

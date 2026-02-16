@@ -6,7 +6,7 @@ import { Box, Tabs } from '@chakra-ui/react'
 import Quizes from '@/components/ui/quizes'
 import { FaRobot, FaQuestionCircle } from 'react-icons/fa'
 import { DocumentPublic } from '@/client/types.gen'
-import { fileUploadService } from '@/client'
+import { fileUploadService, ItemsService } from '@/client'
 
 
 import { useEffect, useState } from 'react'
@@ -17,11 +17,14 @@ export const Route = createFileRoute('/_layout/item/$itemId')({
 
 function RouteComponent() {
   const itemId = Route.useParams().itemId
+  const [summary, setSummary] = useState<string>("")
   const [documents, setDocument] = useState<Array<DocumentPublic>>([])
 
   useEffect(() => {
     const fetchFile = async () => {
       try {
+        const item = await ItemsService.readItem(itemId)
+        setSummary(item.summary ? item.summary : "nice")
         const response = await fileUploadService.getFile(itemId)
         setDocument(response.data)
       } catch (error) {
@@ -35,15 +38,19 @@ function RouteComponent() {
     <div style={{ display: "flex", flexDirection: "row", gap: "20px", paddingBottom: "20px", marginBottom: "20px", paddingTop: "20px", height: "100%" }}>
       <Box w={{ base: '100%', lg: '35%' }} minW="350px" overflowY="auto" pr={2}>
         <UploadBox
-          onUploadStart={(doc) => {
+          onUploadStart={(doc, summary) => {
             setDocument(doc)
+            setSummary(summary)
           }}
-          onUploadSuccess={(savedDocuments) => setDocument(savedDocuments)}
+          onUploadSuccess={(savedDocuments, summary) => {
+            setDocument(savedDocuments)
+            setSummary(summary)
+          }}
           itemId={itemId}
           document={documents}
         />
         <Box mt={6}>
-          <SummaryResult content={documents[0]?.summary} />
+          <SummaryResult content={summary} />
         </Box>
       </Box>
 

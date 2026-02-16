@@ -23,6 +23,7 @@ export type ItemPublic = {
     description?: (string | null);
     id: string;
     owner_id: string;
+    summary?: string;
 };
 
 export type ItemsPublic = {
@@ -252,4 +253,9 @@ export type DocumentPublic = {
 
 export type DocumentsPublic = {
     data: Array<DocumentPublic>;
+}
+
+export type UploadResponse = {
+    document: DocumentPublic;
+    summary: string;
 }

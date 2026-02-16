@@ -8,8 +8,8 @@ import { DocumentPublic } from '@/client/types.gen'
 
 
 interface UploadFileProps {
-    onUploadStart: (doc: Array<DocumentPublic>) => void;           
-    onUploadSuccess: (document: Array<DocumentPublic>) => void;
+    onUploadStart: (doc: Array<DocumentPublic>, summary: string) => void;           
+    onUploadSuccess: (document: Array<DocumentPublic>, summary: string) => void;
     itemId: string
     document: Array<DocumentPublic> 
 }
@@ -46,19 +46,20 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, docu
             title: selectedFile.name,
             summary: "generating summary...",
         }
+        const summary = "generating summary..."
         const newDocuments = [...savedDocument]
         newDocuments.push(doc)
         setSavedDocument(newDocuments)
-        onUploadStart(newDocuments)
+        onUploadStart(newDocuments, summary)
 
 
         try {
             const respond = await fileUploadService.uploadFile(itemId,selectedFile)
-            const document = respond
+            const document = respond.document
             const newDocuments = [...savedDocument]
             newDocuments.push(document)
             setSavedDocument(newDocuments)
-            onUploadSuccess(newDocuments)
+            onUploadSuccess(newDocuments, respond.summary)
     
             toaster.create({
                 title: "File uploaded successfully",
@@ -80,8 +81,9 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, docu
     const handleRemoveFile = (index: number) => {
         const document = savedDocument[index]
         const newDocuments = savedDocument.filter((_, i) => i !== index)
+        const summary = "generating summary..."
         setSavedDocument(newDocuments)
-        onUploadStart(newDocuments)
+        onUploadStart(newDocuments, summary)
         if (document?.id) {
             fileUploadService.deleteFile(document?.id).catch(() => {
                 toaster.create({

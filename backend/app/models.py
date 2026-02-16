@@ -62,6 +62,8 @@ class UsersPublic(SQLModel):
 class ItemBase(SQLModel):
     title: str = Field(min_length=1, max_length=255)
     description: str | None = Field(default=None, max_length=255)
+    summary: str | None = Field(default=None, sa_column=Column(Text))
+
 
 
 # Properties to receive on item creation
@@ -72,6 +74,7 @@ class ItemCreate(ItemBase):
 # Properties to receive on item update
 class ItemUpdate(ItemBase):
     title: str | None = Field(default=None, min_length=1, max_length=255)  # type: ignore
+    summary: str | None = Field(default=None, sa_column=Column(Text))
 
 
 # Database model, database table inferred from class name
@@ -138,3 +141,8 @@ class TokenPayload(SQLModel):
 class NewPassword(SQLModel):
     token: str
     new_password: str = Field(min_length=8, max_length=128)
+
+
+class UploadResponse(SQLModel):
+    document: DocumentPublic
+    summary: str

@@ -12,7 +12,7 @@ interface chatMessage {
 }
 
 export default function Chatbot() {
-    const [response, setResponse] = useState<string>("")
+
     const [message, setMessage] = useState<string>("")
     const [messages, setMessages] = useState<chatMessage[]>([])
 
@@ -29,7 +29,7 @@ export default function Chatbot() {
 
         try {
             const res = await fileUploadService.chatWithDocument(userInput)
-            setResponse(res.message)
+
             const assistantMessage: chatMessage = {
                 id: Date.now().toString(),
                 role: 'assistant',
