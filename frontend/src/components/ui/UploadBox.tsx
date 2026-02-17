@@ -10,11 +10,12 @@ import { DocumentPublic } from '@/client/types.gen'
 interface UploadFileProps {
     onUploadStart: (doc: Array<DocumentPublic>, summary: string) => void;           
     onUploadSuccess: (document: Array<DocumentPublic>, summary: string) => void;
+    onDeleteFile: (summary: string) => void;
     itemId: string
     document: Array<DocumentPublic> 
 }
 
-export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, document }: UploadFileProps) {
+export default function UploadBox({ onUploadStart, onUploadSuccess, onDeleteFile, itemId, document }: UploadFileProps) {
     const [savedDocument, setSavedDocument] = useState<Array<DocumentPublic>>([])
 
     useEffect(() => {
@@ -85,7 +86,16 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, docu
         setSavedDocument(newDocuments)
         onUploadStart(newDocuments, summary)
         if (document?.id) {
-            fileUploadService.deleteFile(document?.id).catch(() => {
+            fileUploadService.deleteFile(document?.id).then((response) => {
+                onDeleteFile(response.message)
+                toaster.create({
+                    title: "File deleted successfully",
+                    description: "The file has been deleted.",
+                    type: "success",
+                    duration: 3000,
+                })
+            })
+            .catch(() => {
                 toaster.create({
                     title: "Delete failed",
                     description: "There was an error deleting the file.",
@@ -168,6 +178,8 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, itemId, docu
                             <Button
                                 onClick={() => handleRemoveFile(index)}
                                 bg="transparent"
+                                color="gray.400"
+
                             >
                                 <FaTrash />
                             </Button>

@@ -64,9 +64,11 @@ def delete_item(
      document = session.get(Document, id)
      if not document:
           raise HTTPException(status_code=404, detail="Document not found")
+     item_id = document.owner_id
      session.delete(document)
      session.commit()
-     return Message(message="Document deleted successfully")
+     summary = summarization_model.generate_item_summry(item_id, session)
+     return Message(message=summary or "No summary available.")
 
 
 

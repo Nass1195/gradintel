@@ -24,13 +24,13 @@ function RouteComponent() {
     const fetchFile = async () => {
       try {
         const item = await ItemsService.readItem(itemId)
-        setSummary(item.summary ? item.summary : "nice")
+        setSummary(item.summary ? item.summary : "No summary available.")
         const response = await fileUploadService.getFile(itemId)
         setDocument(response.data)
       } catch (error) {
         console.error("Error fetching file summary:", error)
       }
-    } 
+    }
     fetchFile()
   }, [itemId])
   
@@ -44,6 +44,9 @@ function RouteComponent() {
           }}
           onUploadSuccess={(savedDocuments, summary) => {
             setDocument(savedDocuments)
+            setSummary(summary)
+          }}
+          onDeleteFile={(summary) => {
             setSummary(summary)
           }}
           itemId={itemId}
