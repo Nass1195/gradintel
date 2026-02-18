@@ -259,3 +259,13 @@ export type UploadResponse = {
     document: DocumentPublic;
     summary: string;
 }
+
+export type ChatMessage = {
+    message: string;
+    role: 'user' | 'assistant';
+    created_at: string;
+}
+
+export type ChatMessagesPublic = {
+    data: Array<ChatMessage>;
+}

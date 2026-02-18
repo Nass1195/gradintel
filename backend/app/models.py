@@ -1,4 +1,4 @@
-import datetime
+from datetime import datetime
 import uuid
 
 from pydantic import EmailStr
@@ -130,11 +130,22 @@ class ChatMessageBase(SQLModel):
 
 class ChatMessage(ChatMessageBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
-    item_id: uuid.UUID = Field(
+    owner_id: uuid.UUID = Field(
         foreign_key="item.id", nullable=False, ondelete="CASCADE", index=True
     )
     owner: Item | None = Relationship(back_populates="chat_messages")
 
+class ChatMessageCreate(ChatMessageBase):
+    pass
+
+
+class ChatMessagePublic(SQLModel):
+    message: str
+    role: str
+    created_at: datetime
+
+class ChatMessagesPublic(SQLModel):
+    data: list[ChatMessagePublic]
 
 # Generic message
 class Message(SQLModel):

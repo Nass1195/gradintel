@@ -82,7 +82,7 @@ function RouteComponent() {
           </Box>
 
           <Tabs.Content value="chat" p={0} flex="1" overflow="hidden">
-              <Chatbot />
+              <Chatbot itemId={itemId}/>
           </Tabs.Content>
           <Tabs.Content value="quiz" p={6} flex="1" overflowY="auto">
             <Quizes itemId={itemId}/>

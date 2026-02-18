@@ -3,7 +3,7 @@ from typing import Any
 from uuid import UUID
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from app.api.deps import CurrentUser, SessionDep
-from app.models import Message, Document, DocumentCreate, DocumentPublic, DocumentsPublic, UploadResponse
+from app.models import Message, Document, DocumentCreate, DocumentsPublic, UploadResponse, ChatMessageCreate, ChatMessage, ChatMessagesPublic
 from app.services.preprocess import preprocess
 from app.services.summarization import model as summarization_model
 from app.services.quiz import quiz as quiz_model
@@ -11,13 +11,37 @@ from app.services.chatbot import chatbot
 
 router = APIRouter(prefix="/upload", tags=["file_upload"])
 
-@router.post("/chat", response_model=Message)
+@router.post("/chat/{item_id}", response_model=Message)
 async def chat_with_document(
-     *, session: SessionDep, current_user: CurrentUser, user_input: Message
+     *, item_id: UUID, session: SessionDep, current_user: CurrentUser, user_input: Message
 ) -> Message:
-     print(f"Received chat request for item_id: with user input: {user_input.message}")
+     
+     user_message = ChatMessageCreate(message=user_input.message, role="user")
+     db_message = ChatMessage.model_validate(user_message, update={"owner_id": item_id})
+
+     session.add(db_message)
+     session.commit()
+     session.refresh(db_message)
+
      response = await chatbot.generate_chat_response(user_input.message)
+
+     assistant_message = ChatMessageCreate(message=response, role="assistant")
+     db_assistant_message = ChatMessage.model_validate(assistant_message, update={"owner_id": item_id})
+
+     session.add(db_assistant_message)
+     session.commit()
+     session.refresh(db_assistant_message)
+
      return Message(message=response)
+
+
+@router.get("/chat/{item_id}", response_model=ChatMessagesPublic)
+def get_chat_history(
+     *, item_id: UUID, session: SessionDep, current_user: CurrentUser
+) -> ChatMessagesPublic:
+     statement = select(ChatMessage).where(ChatMessage.owner_id == item_id).order_by(ChatMessage.created_at)
+     messages = session.exec(statement).all()
+     return ChatMessagesPublic(data=messages)
 
 
 

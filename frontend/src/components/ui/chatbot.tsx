@@ -1,40 +1,49 @@
 import { Box, Button, Flex, Heading, HStack, Input, Text, VStack } from "@chakra-ui/react";
 import { fileUploadService } from "@/client"
-import { useState } from "react";
-import { Message } from "@/client/types.gen";
+import { useState, useEffect} from "react";
+import { Message, ChatMessage } from "@/client/types.gen";
 import { FaPaperPlane, FaRobot } from "react-icons/fa"
 
-interface chatMessage {
-    id: string;
-    role: 'user' | 'assistant';
-    content: string;
-    timestamp: string;
+
+interface ChatMessageProps {
+    itemId: string
 }
 
-export default function Chatbot() {
+
+export default function Chatbot({ itemId }: ChatMessageProps) {
 
     const [message, setMessage] = useState<string>("")
-    const [messages, setMessages] = useState<chatMessage[]>([])
+    const [messages, setMessages] = useState<ChatMessage[]>([])
+
+    useEffect(() => {
+        const fetchChatLogs = async () => {
+          try {
+            const response = await fileUploadService.getChatLogs(itemId)
+            setMessages(response.data)
+          } catch (error) {
+            console.error("Error fetching chat logs:", error)
+          }
+        }
+        fetchChatLogs()
+    }, [itemId])
 
     const handleSendMessage = async () => {
         if (!message.trim()) return
-        const newMessage: chatMessage = {
-            id: Date.now().toString(),
+        const newMessage: ChatMessage = {
             role: 'user',
-            content: message,
-            timestamp: new Date().toISOString(),
+            message: message,
+            created_at: new Date().toISOString(),
         }
         setMessages((prev) => [...prev, newMessage])
         const userInput: Message = { message }
 
         try {
-            const res = await fileUploadService.chatWithDocument(userInput)
+            const res = await fileUploadService.chatWithDocument(userInput, itemId)
 
-            const assistantMessage: chatMessage = {
-                id: Date.now().toString(),
+            const assistantMessage: ChatMessage = {
                 role: 'assistant',
-                content: res.message,
-                timestamp: new Date().toISOString(),
+                message: res.message,
+                created_at: new Date().toISOString(),
             }
             setMessages((prev) => [...prev, assistantMessage])
             setMessage("")
@@ -57,7 +66,7 @@ export default function Chatbot() {
                     AI Chatbot
                 </Heading>
                 {messages.map((msg) => (
-                    <HStack maxW="100%" align="start" key={msg.id} justifyContent={msg.role === 'user' ? 'flex-end' : 'flex-start'} mb={2}>
+                    <HStack maxW="100%" align="start"  justifyContent={msg.role === 'user' ? 'flex-end' : 'flex-start'} mb={2}>
                         {msg.role === 'assistant' && (
                             <Box
                                 bg="blue.500"
@@ -83,7 +92,7 @@ export default function Chatbot() {
                             border="1px solid"
                             borderColor={msg.role === 'assistant' ? "gray.200" : "transparent"}
                         >
-                            <Text fontSize="sm" textAlign="left" >{msg.content}</Text>
+                            <Text fontSize="sm" textAlign="left" >{msg.message}</Text>
                         </Box>
                     </HStack>
                 ))}
