@@ -1,8 +1,9 @@
+import datetime
 import uuid
 
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
-from sqlalchemy import Column, Text
+from sqlalchemy import Column, Text, DateTime
 
 
 
@@ -85,6 +86,7 @@ class Item(ItemBase, table=True):
     )
     owner: User | None = Relationship(back_populates="items")
     documents: list["Document"] = Relationship(back_populates="owner", cascade_delete=True)
+    chat_messages: list["ChatMessage"] = Relationship(back_populates="owner", cascade_delete=True)
 
 
 # Properties to return via API, id is always required
@@ -120,6 +122,18 @@ class DocumentPublic(SQLModel):
 
 class DocumentsPublic(SQLModel):
     data: list[DocumentPublic]
+
+class ChatMessageBase(SQLModel):
+    message: str = Field(sa_column=Column(Text))
+    role: str = Field(max_length=20, index=True) 
+    created_at: datetime = Field(default_factory=datetime.utcnow, sa_column=Column(DateTime(timezone=True)))
+
+class ChatMessage(ChatMessageBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    item_id: uuid.UUID = Field(
+        foreign_key="item.id", nullable=False, ondelete="CASCADE", index=True
+    )
+    owner: Item | None = Relationship(back_populates="chat_messages")
 
 
 # Generic message
