@@ -4,6 +4,7 @@ import uuid
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
 from sqlalchemy import Column, Text, DateTime
+from pgvector.sqlalchemy import Vector
 
 
 
@@ -110,6 +111,7 @@ class Document(DocumentBase, table=True):
         foreign_key="item.id", nullable=False, ondelete="CASCADE"
     )
     owner: Item | None = Relationship(back_populates="documents")
+    chunks: list["Chunk"] = Relationship(back_populates="document", cascade_delete=True)
 
 
 class DocumentCreate(DocumentBase):
@@ -146,6 +148,24 @@ class ChatMessagePublic(SQLModel):
 
 class ChatMessagesPublic(SQLModel):
     data: list[ChatMessagePublic]
+
+
+class ChunkBase(SQLModel):
+    content: str = Field(sa_column=Column(Text))
+    chunk_index: int = Field(index=True)
+    embedding: list[float] = Field(sa_column=Column(Vector(768))) 
+
+
+class Chunk(ChunkBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    document_id: uuid.UUID = Field(
+        foreign_key="document.id", nullable=False, ondelete="CASCADE", index=True
+    )
+    document: Document | None = Relationship(back_populates="chunks")
+
+class ChunkCreate(ChunkBase):
+    pass
+
 
 # Generic message
 class Message(SQLModel):

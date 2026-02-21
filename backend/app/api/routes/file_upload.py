@@ -72,6 +72,8 @@ async def upload_file(
      session.add(db_document)
      session.commit()
      session.refresh(db_document)
+     file.file.seek(0)
+     await preprocess.preprocess_text_for_chat(file, db_document.id, session)
 
      item_summary = summarization_model.generate_item_summry(item_id, session)
 
