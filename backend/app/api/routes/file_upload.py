@@ -23,7 +23,7 @@ async def chat_with_document(
      session.commit()
      session.refresh(db_message)
 
-     response = await chatbot.generate_chat_response(user_input.message)
+     response = await chatbot.generate_chat_response(user_input.message, item_id, session)
 
      assistant_message = ChatMessageCreate(message=response, role="assistant")
      db_assistant_message = ChatMessage.model_validate(assistant_message, update={"owner_id": item_id})
