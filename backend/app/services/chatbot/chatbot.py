@@ -95,13 +95,20 @@ async def add_context_to_query(user_input: str, history: list[ChatMessage]) -> s
     Preserve any constraints and key entities (names, IDs, technical terms).
     Do NOT answer the question. Do NOT add new facts.
     Output ONLY the rewritten query, no quotes, no bullet points.
+    """.strip()
+
+
+    user_prompt = f"""
     Conversation history:
     {conversation}
+
     User's latest message:
     {user_input}
+
     Rewritten standalone query:
     """.strip()
 
-    standalone_query = await llmModel.generate_text([{"role": "system", "content": system_instruction}])
+    standalone_query = await llmModel.generate_text([{"role": "system", "content": system_instruction},
+                                                     {"role": "user", "content": user_prompt}])
     return standalone_query
     

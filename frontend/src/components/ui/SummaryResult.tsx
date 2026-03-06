@@ -1,6 +1,10 @@
 import { Box, Text, HStack, Button, Heading } from "@chakra-ui/react"
 import { FaCopy} from "react-icons/fa"
 import { toaster } from "@/components/ui/toaster"
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 
 interface SummaryResultProps {
   content: string | null | undefined;
@@ -19,7 +23,7 @@ export default function SummaryResult({ content }: SummaryResultProps) {
       duration: 3000,
     })
   }
-  
+
 
   return (
     <Box w="100%"  style={{ paddingTop: "50px", paddingBottom: "50px", minHeight: "80%"}} animation="fadeIn 0.5s">
@@ -28,10 +32,9 @@ export default function SummaryResult({ content }: SummaryResultProps) {
       <Box 
         p={5} 
         rounded="2xl" 
-        h = "fit-content"
+        h = "100%"
         border="1px solid" 
         borderColor="gray.200"
-        maxH="400px"
         overflowY="auto"
         shadow="inner"
 
@@ -51,9 +54,9 @@ export default function SummaryResult({ content }: SummaryResultProps) {
             <FaCopy />
           </Button>
         </HStack>
-        <Text >
+        <ReactMarkdown remarkPlugins={[remarkGfm, remarkMath]} rehypePlugins={[rehypeKatex]} >
           {!content || content.trim() === "" ? "No summary available." : content}
-        </Text>
+        </ReactMarkdown >
       </Box>
     </Box>
   )

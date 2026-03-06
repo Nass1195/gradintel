@@ -3,6 +3,10 @@ import { fileUploadService } from "@/client"
 import { useState, useEffect} from "react";
 import { Message, ChatMessage } from "@/client/types.gen";
 import { FaPaperPlane, FaRobot } from "react-icons/fa"
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
+import remarkMath from "remark-math";
+import rehypeKatex from "rehype-katex";
 
 
 interface ChatMessageProps {
@@ -14,6 +18,7 @@ export default function Chatbot({ itemId }: ChatMessageProps) {
 
     const [message, setMessage] = useState<string>("")
     const [messages, setMessages] = useState<ChatMessage[]>([])
+    const [isLoading, setIsLoading] = useState<boolean>(false)
 
     useEffect(() => {
         const fetchChatLogs = async () => {
@@ -28,7 +33,7 @@ export default function Chatbot({ itemId }: ChatMessageProps) {
     }, [itemId])
 
     const handleSendMessage = async () => {
-        if (!message.trim()) return
+        if (!message.trim() || isLoading) return
         const newMessage: ChatMessage = {
             role: 'user',
             message: message,
@@ -36,6 +41,8 @@ export default function Chatbot({ itemId }: ChatMessageProps) {
         }
         setMessages((prev) => [...prev, newMessage])
         const userInput: Message = { message }
+        setIsLoading(true)
+        setMessage("")
 
         try {
             const res = await fileUploadService.chatWithDocument(userInput, itemId)
@@ -46,9 +53,10 @@ export default function Chatbot({ itemId }: ChatMessageProps) {
                 created_at: new Date().toISOString(),
             }
             setMessages((prev) => [...prev, assistantMessage])
-            setMessage("")
         } catch (error) {
             console.error("Error chatting with document:", error)
+        } finally {
+            setIsLoading(false)
         }
         
     }
@@ -65,8 +73,8 @@ export default function Chatbot({ itemId }: ChatMessageProps) {
                 <Heading as="h2" size="xl" mb={2}>
                     AI Chatbot
                 </Heading>
-                {messages.map((msg) => (
-                    <HStack maxW="100%" align="start"  justifyContent={msg.role === 'user' ? 'flex-end' : 'flex-start'} mb={2}>
+                {messages.map((msg, index) => (
+                    <HStack key={index} maxW="100%" align="start"  justifyContent={msg.role === 'user' ? 'flex-end' : 'flex-start'} mb={2}>
                         {msg.role === 'assistant' && (
                             <Box
                                 bg="blue.500"
@@ -92,10 +100,48 @@ export default function Chatbot({ itemId }: ChatMessageProps) {
                             border="1px solid"
                             borderColor={msg.role === 'assistant' ? "gray.200" : "transparent"}
                         >
-                            <Text fontSize="sm" textAlign="left" >{msg.message}</Text>
+                            <ReactMarkdown
+                                remarkPlugins={[remarkGfm, remarkMath]}
+                                rehypePlugins={[rehypeKatex]}
+                            >
+                                {msg.message}
+                            </ReactMarkdown>
                         </Box>
                     </HStack>
                 ))}
+                {isLoading && (
+                    <HStack maxW="100%" align="start" justifyContent="flex-start" mb={2}>
+                        <Box
+                            bg="blue.500"
+                            color="white"
+                            boxSize="32px"
+                            rounded="full"
+                            display="flex"
+                            alignItems="center"
+                            justifyContent="center"
+                            mt={1}
+                        >
+                            <FaRobot />
+                        </Box>
+                        <Box
+                            bg="white"
+                            color="gray.800"
+                            p={4}
+                            rounded="2xl"
+                            roundedTopLeft="2px"
+                            roundedTopRight="2xl"
+                            shadow="sm"
+                            border="1px solid"
+                            borderColor="gray.200"
+                        >
+                            <Box className="typing-indicator">
+                                <Box className="typing-indicator-dot" />
+                                <Box className="typing-indicator-dot" />
+                                <Box className="typing-indicator-dot" />
+                            </Box>
+                        </Box>
+                    </HStack>
+                )}
             </VStack>
 
 
