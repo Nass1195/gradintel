@@ -1,5 +1,5 @@
 import {  Flex, Text } from "@chakra-ui/react"
-import { createFileRoute, Link } from "@tanstack/react-router"
+import { createFileRoute } from "@tanstack/react-router"
 import { ItemCard } from "@/components/ui/DashboardCards"
 import { ItemsService } from "@/client"
 import { useQuery } from "@tanstack/react-query"
@@ -39,21 +39,11 @@ function Dashboard() {
         </Text>
       )}
       {!isLoading && items.map((item) => (
-        <Link
-          key={item.id}
-          to="/item/$itemId"
-          params={{ itemId: item.id }}
-          search={{ page: 1 }}
-          style={{ textDecoration: "none", width: "20%" }}
-        >
-          <ItemCard
-            title={item.title}
-            summarySnippet={item.description || ""}
-            date={item.id}
-            
-          />
-        </Link>
-        ))}
+        <ItemCard
+          item={item}
+          
+        />
+      ))}
      
     </Flex>
   )

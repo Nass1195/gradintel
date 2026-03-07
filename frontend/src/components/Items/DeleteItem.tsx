@@ -57,9 +57,8 @@ const DeleteItem = ({ id }: { id: string }) => {
       onOpenChange={({ open }) => setIsOpen(open)}
     >
       <DialogTrigger asChild>
-        <Button variant="ghost" size="sm" colorPalette="red">
+        <Button size="sm" color="red" bg="transparent" _hover={{ bg: "bg.emphasized" }}>
           <FiTrash2 fontSize="16px" />
-          Delete Item
         </Button>
       </DialogTrigger>
 

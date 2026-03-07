@@ -1,48 +1,58 @@
-import { Box, Text, VStack, Icon, Heading, Badge } from "@chakra-ui/react"
-import { FiFileText, FiClock } from "react-icons/fi" // Make sure to install react-icons or use chakra icons
+import { Box, Text, VStack, Icon, Heading, HStack } from "@chakra-ui/react"
+import { FiFileText } from "react-icons/fi" // Make sure to install react-icons or use chakra icons
+import DeleteItem from "@/components/Items/DeleteItem"
+import EditItem from "@/components/Items/EditItem"
+import type { ItemPublic } from "@/client"
+import { Link } from "@tanstack/react-router"
+
 
 
 interface ItemCardProps {
-  title: string;
-  summarySnippet: string;
-  date: string;
+  item: ItemPublic
 }
 
-export const ItemCard = ({ title, summarySnippet, date }: ItemCardProps) => {
+export const ItemCard = ({ item }: ItemCardProps) => {
   return (
     <Box
       h="200px"
-      w="100%"
+      minW="350px"
       borderRadius="lg"
       border="1px solid"
-      borderColor="gray.200"
-      p={5}
+      borderColor="border"
+      bg="bg.panel"
       shadow="none"
       position="relative"
       transition="all 0.2s"
-      _hover={{ shadow: "sm", transform: "translateY(-2px)", borderColor: "gray.200" }}
+      _hover={{ shadow: "sm", transform: "translateY(-2px)", borderColor: "border.emphasized" }}
       cursor="pointer"
       display="flex"
       flexDirection="column"
     >
-      <VStack align="start" gap={3} flex={1}>
-        <Box display="flex" alignItems="center" gap={2} w="100%">
-          <Icon as={FiFileText} color="blue.500" />
-          <Heading size="sm" >{title}</Heading>
-        </Box>
-        
-        <Text fontSize="sm" >
-          {summarySnippet}
-        </Text>
-      </VStack>
+      <Link
+        key={item.id}
+        to="/item/$itemId"
+        params={{ itemId: item.id }}
+        search={{ page: 1 }}
+        style={{ height: "100%"}}
+      >
+        <VStack align="start" gap={3} flex={1} p={5}>
+          <Box display="flex" alignItems="center" gap={2} w="100%">
+            <Icon as={FiFileText} color="fg.info" />
+            <Heading size="sm" >{item.title}</Heading>
+          </Box>
+          
+          <Text fontSize="sm" >
+            {item.description}
+          </Text>
+        </VStack>
+      </Link>
 
-      <Box mt="auto" pt={4} display="flex" justifyContent="space-between" alignItems="center">
-        <Badge colorScheme="blue" fontSize="xs">Processed</Badge>
-        <Box display="flex" alignItems="center" gap={1} color="gray.400">
-           <Icon as={FiClock} boxSize={3} />
-           <Text fontSize="xs">{date}</Text>
-        </Box>
-      </Box>
+      <HStack gap={2} p={3} justify="flex-end" >
+        <EditItem item={item} /> 
+        <DeleteItem id={item.id} />
+      </HStack>
+
+     
     </Box>
   )
 }

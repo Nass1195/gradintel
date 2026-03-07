@@ -77,9 +77,10 @@ const AddItem = () => {
          <Box
              as="button"
              h="200px"
-             w="20%"
+             minW="350px"
              border="2px dashed"
-             borderColor="gray.300"
+             borderColor="border"
+             bg="bg.panel"
              rounded="xl"
              display="flex"
              flexDirection="column"
@@ -88,11 +89,11 @@ const AddItem = () => {
              cursor="pointer"
              transition="all 0.2s"
              _hover={{
-               borderColor: "blue.500",
-               bg: "blue.50",
+               borderColor: "border.emphasized",
+               bg: "bg.emphasized",
                transform: "translateY(-2px)",
              }}
-             color="gray.500"
+             color="fg.muted"
            >
              <Icon as={FaPlus} boxSize={8} mb={2} />
              <Text fontWeight="bold">Add New Item</Text>

@@ -14,7 +14,7 @@ function Navbar() {
       position="sticky"
       color="white"
       align="center"
-      bg="white"
+      bg="bg.panel"
       _dark={{ bg: "gray.800", color: "white" }}
       w="100%"
       top={0}

@@ -81,9 +81,8 @@ const EditItem = ({ item }: EditItemProps) => {
       onOpenChange={({ open }) => setIsOpen(open)}
     >
       <DialogTrigger asChild>
-        <Button variant="ghost">
+        <Button size="sm" bg="transparent" color="fg" _hover={{ bg: "bg.emphasized" }}>
           <FaExchangeAlt fontSize="16px" />
-          Edit Item
         </Button>
       </DialogTrigger>
       <DialogContent>
