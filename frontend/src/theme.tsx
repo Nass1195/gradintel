@@ -41,22 +41,24 @@ export const system = createSystem(defaultConfig, {
     ".typing-indicator-dot:nth-of-type(3)": {
       animationDelay: "0.4s",
     },
-    "@keyframes typingBounce": {
-      "0%, 80%, 100%": {
-        transform: "scale(0.6)",
-        opacity: 0.4,
-      },
-      "40%": {
-        transform: "scale(1)",
-        opacity: 1,
-      },
-    },
   },
   theme: {
     tokens: {
       colors: {
         ui: {
           main: { value: "#009688" },
+        },
+      },
+    },
+    keyframes: {
+      typingBounce: {
+        "0%, 80%, 100%": {
+          transform: "scale(0.6)",
+          opacity: "0.4",
+        },
+        "40%": {
+          transform: "scale(1)",
+          opacity: "1",
         },
       },
     },

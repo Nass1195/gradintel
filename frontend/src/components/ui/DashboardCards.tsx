@@ -13,14 +13,14 @@ export const ItemCard = ({ title, summarySnippet, date }: ItemCardProps) => {
     <Box
       h="200px"
       w="100%"
+      borderRadius="lg"
       border="1px solid"
       borderColor="gray.200"
-      rounded="xl"
       p={5}
-      shadow="sm"
+      shadow="none"
       position="relative"
       transition="all 0.2s"
-      _hover={{ shadow: "md", transform: "translateY(-2px)" }}
+      _hover={{ shadow: "sm", transform: "translateY(-2px)", borderColor: "gray.200" }}
       cursor="pointer"
       display="flex"
       flexDirection="column"

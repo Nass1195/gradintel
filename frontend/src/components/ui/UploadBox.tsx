@@ -109,11 +109,13 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, onDeleteFile
     return (
         
         <Box 
-            border="1px solid " 
+            border="1px solid "
+            borderColor="border" 
             p={6} 
             rounded="2xl"
-            shadow="sm"
+            shadow="none"
             h="fit-content"
+            bg="bg.panel"
         >
             <HStack mb={4} gap={2}>
                 <Icon as={FaCloudUploadAlt} color="blue.500" boxSize={5} />
@@ -125,12 +127,14 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, onDeleteFile
             <Box>
                 <Box
                     border="2px dashed"
+                    borderColor="border"
                     rounded="xl"
                     p={8}
                     textAlign="center"
                     cursor="pointer"
                     position="relative"
                     mb={4}
+                    bg="bg.subtle"
                 >
                     <Input 
                         type="file"
@@ -154,9 +158,11 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, onDeleteFile
                 {savedDocument.map((doc, index) => (
                     <Box
                         border="1px solid"
+                        borderColor="border"
                         rounded="xl"
                         p={4}
                         mb={3}
+                        bg="bg.subtle"
                     >
                         <HStack justify="space-between">
                             <HStack gap={3}>
@@ -178,7 +184,7 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, onDeleteFile
                             <Button
                                 onClick={() => handleRemoveFile(index)}
                                 bg="transparent"
-                                color="gray.400"
+                                color="fg.muted"
 
                             >
                                 <FaTrash />

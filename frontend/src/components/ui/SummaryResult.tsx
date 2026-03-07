@@ -1,4 +1,4 @@
-import { Box, Text, HStack, Button, Heading } from "@chakra-ui/react"
+import { Box, HStack, Button, Heading } from "@chakra-ui/react"
 import { FaCopy} from "react-icons/fa"
 import { toaster } from "@/components/ui/toaster"
 import ReactMarkdown from "react-markdown";
@@ -26,17 +26,16 @@ export default function SummaryResult({ content }: SummaryResultProps) {
 
 
   return (
-    <Box w="100%"  style={{ paddingTop: "50px", paddingBottom: "50px", minHeight: "80%"}} animation="fadeIn 0.5s">
-      
-
+    <Box w="100%" pt={6} pb={6} minH="80%">
       <Box 
         p={5} 
         rounded="2xl" 
         h = "100%"
         border="1px solid" 
-        borderColor="gray.200"
+        borderColor="border"
         overflowY="auto"
-        shadow="inner"
+        bg="bg.panel"
+        shadow="none"
 
       >
 
@@ -46,8 +45,9 @@ export default function SummaryResult({ content }: SummaryResultProps) {
           </HStack>
           <Button
             aria-label="Copy summary"
-            variant="ghost"
-            color="gray.400"
+            bg="transparent"
+            color="fg.muted"
+            _hover={{ bg: "bg.emphasized" }}
             size="sm"
             onClick={handelCopySummary}
           >

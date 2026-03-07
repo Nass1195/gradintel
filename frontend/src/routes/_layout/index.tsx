@@ -1,3 +1,4 @@
+import {  Flex, Text } from "@chakra-ui/react"
 import { createFileRoute, Link } from "@tanstack/react-router"
 import { ItemCard } from "@/components/ui/DashboardCards"
 import { ItemsService } from "@/client"
@@ -29,17 +30,31 @@ function Dashboard() {
   const items = data?.data ?? []
 
 
-  return (<>
-    <div style={{ display: "flex", gap: "20px", flexWrap: "wrap", paddingBottom: "20px", marginBottom: "20px", paddingTop: "20px" }}>
-      <AddItem/>
-      {isLoading && <div>Loading...</div>}
+  return (
+    <Flex w="100%" gap={4} flexWrap="wrap">
+      <AddItem  />
+      {isLoading && (
+        <Text fontSize="sm" color="gray.500">
+          Loading items...
+        </Text>
+      )}
       {!isLoading && items.map((item) => (
-        <Link key={item.id} to="/item/$itemId" params={{itemId: item.id}} search={{page: 1}} style={{ width: "20%", textDecoration: "none" }}>
-           <ItemCard key={item.id} title={item.title} summarySnippet={item.description || ""} date={item.id} />
+        <Link
+          key={item.id}
+          to="/item/$itemId"
+          params={{ itemId: item.id }}
+          search={{ page: 1 }}
+          style={{ textDecoration: "none", width: "20%" }}
+        >
+          <ItemCard
+            title={item.title}
+            summarySnippet={item.description || ""}
+            date={item.id}
+            
+          />
         </Link>
-       
-      ))
-      }
-    </div>
-  </>)
+        ))}
+     
+    </Flex>
+  )
 }

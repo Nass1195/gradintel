@@ -1,8 +1,8 @@
 import { createFileRoute } from '@tanstack/react-router'
-import  UploadBox  from '@/components/ui/UploadBox'
+import UploadBox from '@/components/ui/UploadBox'
 import SummaryResult from "@/components/ui/SummaryResult"
 import Chatbot from "@/components/ui/chatbot"
-import { Box, Tabs } from '@chakra-ui/react'
+import { Box, Tabs, Flex, Stack } from '@chakra-ui/react'
 import Quizes from '@/components/ui/quizes'
 import { FaRobot, FaQuestionCircle } from 'react-icons/fa'
 import { DocumentPublic } from '@/client/types.gen'
@@ -35,8 +35,13 @@ function RouteComponent() {
   }, [itemId])
   
   return (
-    <div style={{ display: "flex", flexDirection: "row", gap: "20px", paddingBottom: "20px", marginBottom: "20px", paddingTop: "20px", height: "100%" }}>
-      <Box w={{ base: '100%', lg: '35%' }} minW="350px" overflowY="auto" pr={2}>
+    <Flex
+      direction={{ base: 'column', lg: 'row' }}
+      gap={6}
+      py={6}
+      h="100%"
+    >
+      <Stack w={{ base: '100%', lg: '35%' }} minW={{ lg: '320px' }}>
         <UploadBox
           onUploadStart={(doc, summary) => {
             setDocument(doc)
@@ -52,27 +57,37 @@ function RouteComponent() {
           itemId={itemId}
           document={documents}
         />
-        <Box mt={6}>
-          <SummaryResult content={summary} />
-        </Box>
-      </Box>
+        <SummaryResult content={summary} />
+      </Stack>
 
-      <Box w={{ base: '100%', lg: '65%' }} rounded="2xl" shadow="sm" border="1px solid" borderColor="gray.200" overflow="hidden" display="flex" flexDirection="column">
+      <Box
+        w={{ base: '100%', lg: '65%' }}
+        rounded="2xl"
+        bg="bg.panel"
+        border="1px solid"
+        borderColor="border"
+        overflow="hidden"
+        display="flex"
+        flexDirection="column"
+      >
         <Tabs.Root defaultValue="chat" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-          <Box borderBottom="1px solid" borderColor="gray.200" px={4} pt={4}>
+          <Box borderBottom="1px solid" borderColor="border" px={4} pt={4}>
             <Tabs.List gap={4}>
-              <Tabs.Trigger value="chat"
-                px={4} py={2}
-                _selected={{ borderBottomWidth: "2px" }}
+              <Tabs.Trigger
+                value="chat"
+                px={4}
+                py={2}
+                _selected={{ borderBottomWidth: "2px", borderColor: "border.emphasized" }}
                 fontWeight="medium"
                 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
               >
                <FaRobot /> AI Chat
               </Tabs.Trigger>
-              <Tabs.Trigger value="quiz"
-                px={4} py={2}
-                _selected={{  borderBottomWidth: "2px" }}
-                
+              <Tabs.Trigger
+                value="quiz"
+                px={4}
+                py={2}
+                _selected={{ borderBottomWidth: "2px", borderColor: "border.emphasized" }}
                 fontWeight="medium"
                 style={{ display: 'flex', alignItems: 'center', gap: '8px' }}
               >
@@ -89,7 +104,7 @@ function RouteComponent() {
           </Tabs.Content>
         </Tabs.Root>
       </Box>
-    </div>
+    </Flex>
     
   )
 }

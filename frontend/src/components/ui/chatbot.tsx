@@ -1,4 +1,4 @@
-import { Box, Button, Flex, Heading, HStack, Input, Text, VStack } from "@chakra-ui/react";
+import { Box, Button, Flex, HStack, Input, VStack } from "@chakra-ui/react";
 import { fileUploadService } from "@/client"
 import { useState, useEffect} from "react";
 import { Message, ChatMessage } from "@/client/types.gen";
@@ -68,11 +68,8 @@ export default function Chatbot({ itemId }: ChatMessageProps) {
     }
 
     return (
-        <Flex direction="column" h="100%" overflow="hidden" >
-            <VStack align="stretch" flex="1" overflowY="auto" p={4} gap={6}>
-                <Heading as="h2" size="xl" mb={2}>
-                    AI Chatbot
-                </Heading>
+        <Flex direction="column" h="100%" overflow="hidden" bg="bg.panel">
+            <VStack align="stretch" flex="1" overflowY="auto" p={4} gap={4}>
                 {messages.map((msg, index) => (
                     <HStack key={index} maxW="100%" align="start"  justifyContent={msg.role === 'user' ? 'flex-end' : 'flex-start'} mb={2}>
                         {msg.role === 'assistant' && (
@@ -80,6 +77,7 @@ export default function Chatbot({ itemId }: ChatMessageProps) {
                                 bg="blue.500"
                                 color="white"
                                 boxSize="32px"
+                                minW="32px"
                                 rounded="full"
                                 display="flex"
                                 alignItems="center"
@@ -90,15 +88,15 @@ export default function Chatbot({ itemId }: ChatMessageProps) {
                             </Box>
                         )}
                         <Box
-                            bg={msg.role === 'user' ? "blue.600" : "white"}
-                            color={msg.role === 'user' ? "white" : "gray.800"}
+                            bg={msg.role === 'user' ? "bg" : "bg.muted"}
+                            color={msg.role === 'user' ? "fg." : "fg"}
                             p={4}
                             rounded="2xl"
                             roundedTopLeft={msg.role === 'assistant' ? "2px" : "2xl"}
                             roundedTopRight={msg.role === 'user' ? "2px" : "2xl"}
-                            shadow="sm"
+                            shadow="none"
                             border="1px solid"
-                            borderColor={msg.role === 'assistant' ? "gray.200" : "transparent"}
+                            borderColor="border"
                         >
                             <ReactMarkdown
                                 remarkPlugins={[remarkGfm, remarkMath]}
@@ -124,15 +122,15 @@ export default function Chatbot({ itemId }: ChatMessageProps) {
                             <FaRobot />
                         </Box>
                         <Box
-                            bg="white"
-                            color="gray.800"
+                            bg="bg.muted"
+                            color="fg"
                             p={4}
                             rounded="2xl"
                             roundedTopLeft="2px"
                             roundedTopRight="2xl"
-                            shadow="sm"
+                            shadow="none"
                             border="1px solid"
-                            borderColor="gray.200"
+                            borderColor="border"
                         >
                             <Box className="typing-indicator">
                                 <Box className="typing-indicator-dot" />
@@ -145,34 +143,25 @@ export default function Chatbot({ itemId }: ChatMessageProps) {
             </VStack>
 
 
-            <Box borderTop="1px solid" p={4}>
+            <Box borderTop="1px solid" borderColor="border" p={4}>
                 <HStack px={4} py={2}>
-                    <Button
-                        aria-label="Add attachment"
-                        size="sm"
-                        variant="ghost"
-                        color="gray.400"
-                        rounded="full"
-                        p={2}
-                        minW="32px"
-                    >
-                        <span style={{ fontSize: '20px' }}>+</span>
-                    </Button>
-
                     <Input
                         placeholder="Ask a question about your document..."
+                        color="fg"
                         value={message}
                         onChange={(e) => setMessage(e.target.value)}
                         size="lg"
-                        mb={4}
                         onKeyDown={handleKeyDown}
+                        
                     />
                     <Button
                         aria-label="Send message"
                         size="sm"
-                        colorScheme="blue"
+                        bg="transparent"
+                        color="fg.muted"
                         rounded="full"
                         onClick={handleSendMessage}
+                        _hover={{ bg: "bg.emphasized" }}
                         minW="32px"
                         p={2}
                     >
