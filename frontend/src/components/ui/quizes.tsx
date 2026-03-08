@@ -68,8 +68,8 @@ export default function Quizes({ itemId }: QuizesProps) {
         </IconButton>
       </Flex>
       <VStack align="stretch" gap={4} w="100%">
-        {quiz.map((q, i) => (
-          <QuizQuestionComponent key={i} question={q} />
+        {quiz.map((q) => (
+          <QuizQuestionComponent key={q.question} question={q} />
         ))}
       </VStack>
     </VStack>

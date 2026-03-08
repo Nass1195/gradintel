@@ -1,39 +1,37 @@
 from app.services import llmModel
 import json
-from pydantic import BaseModel
 import re
 from sqlmodel import select
-from app.models import Document
+from app.models import Document, QuizPublic, Chunk, Item
 from app.api.deps import SessionDep
-
-
-
-class QuizQuestion(BaseModel):
-    id: int
-    question: str
-    options: list[str]
-    correct_answer: str
-
-class QuizResponse(BaseModel):
-    questions: list[QuizQuestion]
+import random
+import math
 
 
 def retrieve_text_from_db(item_id: str, session: SessionDep):
-    statment = select(Document).where(Document.owner_id == item_id)
-    documents = session.exec(statment).all()
-    if not documents:
+    statment =   (select(Chunk)
+    .join(Chunk.document)
+    .join(Document.owner)
+    .where(Item.id == item_id)
+    )
+    documents_chuncks = session.exec(statment).all()
+    if not documents_chuncks:
         raise ValueError("Document not found")
-    return documents
+    return documents_chuncks
 
     
 async def generate_quiz(item_id: str, session: SessionDep):
     
-    documents = retrieve_text_from_db(item_id, session)
-    text = "\n\n".join(doc.content for doc in documents)
-    quiz_questions = await generate_quiz_questions(text, num_questions=5)
+    documents_chuncks = retrieve_text_from_db(item_id, session)
+    all_questions = []
+    selected_chunks = select_chenks_for_quiz(documents_chuncks, num_chunks=5)
+    for chunk in selected_chunks:
+        quiz_questions = await generate_quiz_questions(chunk.content, num_questions=2)
+        all_questions.extend(quiz_questions)
+   
 
     try: 
-        quiz_response = QuizResponse(questions=quiz_questions)
+        quiz_response = QuizPublic(questions=all_questions)
         for q in quiz_response.questions:
             print(f"Question ID: {q.id}")
             print(f"Question: {q.question}")
@@ -42,7 +40,7 @@ async def generate_quiz(item_id: str, session: SessionDep):
             print("-----")
     except Exception as e:
         print("Error parsing quiz questions:", e)
-        quiz_response = QuizResponse(questions=[])
+        quiz_response = QuizPublic(questions=[])
     
     return quiz_response
 
@@ -64,12 +62,12 @@ async def generate_quiz_questions(text, num_questions=5):
 
         Follow this JSON schema exactly:
         [
-        {
-            "id": 1,
-            "question": "The question text here?",
-            "options": ["Option A", "Option B", "Option C", "Option D"],
-            "correct_answer": "Option A"
-        }
+            {
+                "id": 1,
+                "question": "The question text here?",
+                "options": ["Option A", "Option B", "Option C", "Option D"],
+                "correct_answer": "Option A"
+            }
         ]
     """
 
@@ -94,5 +92,26 @@ async def generate_quiz_questions(text, num_questions=5):
         quiz_data = json.loads(cleaned_response)
     except json.JSONDecodeError:
         print("Raw output:", cleaned_response)
+        return []
     print("Quiz Generation Responses:", quiz_data)
     return quiz_data
+
+
+def select_chenks_for_quiz(chunks, num_chunks=5):
+    total_chunks = len(chunks)
+    if total_chunks <= num_chunks:
+        return chunks
+    
+    selected_chunks = []
+
+    step = total_chunks / num_chunks
+    for i in range(num_chunks):
+        start_idx = math.floor(i * step)
+        end_idx  = math.floor((i + 1) * step) if i < num_chunks - 1 else total_chunks
+
+        bucket = chunks[start_idx:end_idx]
+
+        selected_chunk = random.choice(bucket)
+        selected_chunks.append(selected_chunk)
+
+    return selected_chunks

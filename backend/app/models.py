@@ -167,6 +167,18 @@ class ChunkCreate(ChunkBase):
     pass
 
 
+
+class QuizQuestion(SQLModel):
+    id: int
+    question: str
+    options: list[str]
+    correct_answer: str
+
+class QuizPublic(SQLModel):
+    questions: list[QuizQuestion]
+
+
+
 # Generic message
 class Message(SQLModel):
     message: str

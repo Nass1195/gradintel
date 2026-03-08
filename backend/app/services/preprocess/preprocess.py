@@ -61,25 +61,60 @@ def clean_text(text: str) -> str:
 
 
 
-def chunk_text(text, max_len=2000, overlap=250):
-    chunks = []
-    chunk_index = 0
-    n = len(text)
-    start = 0
-    while start < n:
-        end = min(start + max_len, n)
-        chunk = text[start:end].strip()
+def chunk_text(text, max_len=2000, overlap=250, separators=None):
 
-        if chunk:
-            chunks.append(chunk)
-            chunk_index += 1
+    if separators is None:
+        separators = ["\n\n", "\n", " ", ""]
 
-        if end == n:
+    if len(text) <= max_len:
+        return [text]
+    
+    active_separator = separators[-1]
+    next_separators = []
+
+    for i, sep in enumerate(separators):
+        if sep == "" or sep in text:
+            active_separator = sep
+            next_separators = separators[i+1:]
             break
 
-        start = max( 0, end - overlap) 
+    if active_separator != "":
+        splits = text.split(active_separator)
+    else:
+        splits = list(text)
+
+
+    good_splits = []
+    for split in splits:
+        if len(split) < max_len:
+            good_splits.append(split)
+        else:
+            good_splits.extend(chunk_text(split, max_len, overlap, next_separators))
     
-    return chunks
+    final_chunks = []
+    current_chunk = []
+    current_length = 0
+
+    for split in good_splits:
+        sep_length = len(active_separator) if current_chunk else 0
+        split_length = len(split)
+        if current_length + split_length + sep_length <= max_len:
+            current_chunk.append(split)
+            current_length += split_length + sep_length
+        else:
+            final_chunks.append(active_separator.join(current_chunk))
+            while current_length > overlap or (current_length + split_length > max_len and current_chunk):
+                removed = current_chunk.pop(0)
+                current_length -= len(removed) + (len(active_separator) if current_chunk else 0)
+
+            current_chunk.append(split)
+            current_length += split_length + (len(active_separator) if current_chunk else 0)
+
+    if current_chunk:
+        final_chunks.append(active_separator.join(current_chunk))
+   
+    
+    return final_chunks
         
 def preprocess_text(text):
     text = clean_text(text)

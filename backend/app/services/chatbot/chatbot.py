@@ -10,7 +10,12 @@ async def generate_chat_response(user_input: str, item_id, session) -> str:
     history = history[-6:]
     rewritten_query = await add_context_to_query(user_input, history)
     relevant_chunks = await retrieve_relevant_information(rewritten_query, item_id, session)
-    context_text = "\n\n".join(relevant_chunks)
+
+    formatted_chunks = [
+        f"[Source {i+1}]: {chunk}" for i, chunk in enumerate(relevant_chunks)
+    ]
+
+    context_text = "\n\n".join(formatted_chunks)
 
     system_instruction = """
     You are a retrieval-augmented assistant.
@@ -19,7 +24,7 @@ async def generate_chat_response(user_input: str, item_id, session) -> str:
     - Answer ONLY using the provided CONTEXT.
     - Do NOT use outside knowledge.
     - If the answer is not in the context, say "I don't know."
-    - When you use information, cite sources like (S1), (S2).
+    - When you use information, strictly cite sources using the provided labels, e.g., [Source 1], [Source 2].
     - Be concise and precise.
     """
 
@@ -36,12 +41,12 @@ async def generate_chat_response(user_input: str, item_id, session) -> str:
     Answer:
     """
 
-    massages = [
+    messages = [
         {"role": "system", "content": system_instruction},
         *history_messages,
         {"role": "user", "content": user_prompt}
     ]
-    response = await llmModel.generate_text(massages, max_length=512)
+    response = await llmModel.generate_text(messages, max_length=512)
     return response
 
 def cosine_similarity(vecA, vecB):
@@ -52,15 +57,15 @@ def cosine_similarity(vecA, vecB):
         return 0.0
     return dot_product / (normA * normB)
 
-async def retrieve_relevant_information(user_input: str, item_id, session, k: int = 8) -> list[str]:
+async def retrieve_relevant_information(user_input: str, item_id, session, k: int = 5) -> list[str]:
     query_embeddings = await llmModel.generate_embedding([user_input])
     embeddings = np.array(query_embeddings[0], dtype=np.float32)
-    stament =   (select(Chunk)
+    statment =   (select(Chunk)
     .join(Chunk.document)
     .join(Document.owner)
     .where(Item.id == item_id)
     )
-    chunks = session.exec(stament).all()
+    chunks = session.exec(statment).all()
 
     if not chunks:
         return [""]
