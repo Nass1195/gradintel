@@ -3,7 +3,7 @@ from typing import Any
 from uuid import UUID
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from app.api.deps import CurrentUser, SessionDep
-from app.models import Message, Document, DocumentCreate, DocumentsPublic, UploadResponse, ChatMessageCreate, ChatMessage, ChatMessagesPublic, QuizPublic
+from app.models import Message, Document, DocumentCreate, DocumentsPublic, UploadResponse, ChatMessageCreate, ChatMessage, ChatMessagesPublic, QuizPublic, QuizQuestion
 from app.services.preprocess import preprocess
 from app.services.summarization import model as summarization_model
 from app.services.quiz import quiz as quiz_model
@@ -100,10 +100,20 @@ def delete_item(
 
 
 
-@router.get("/quiz/{id}", response_model=QuizPublic)
+@router.get("/quiz/generate/{id}", response_model=QuizPublic)
 async def generate_quiz_endpoint(
      *, session: SessionDep, current_user: CurrentUser, id: UUID
 ) -> QuizPublic:
      print(f"Received file for quiz generation")
      quiz = await quiz_model.generate_quiz(id, session)
-     return quiz
+     print("Generated quiz")
+
+     return QuizPublic(questions=quiz)
+
+@router.get("/quiz/{id}", response_model=QuizPublic)
+async def get_quiz_endpoint(
+     *, session: SessionDep, current_user: CurrentUser, id: UUID
+) -> QuizPublic:
+     statement = select(QuizQuestion).where(QuizQuestion.item_id == id)
+     quiz = session.exec(statement).all()
+     return QuizPublic(questions=quiz)

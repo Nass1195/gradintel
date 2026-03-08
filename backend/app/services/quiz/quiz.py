@@ -2,7 +2,7 @@ from app.services import llmModel
 import json
 import re
 from sqlmodel import select
-from app.models import Document, QuizPublic, Chunk, Item
+from app.models import Document, QuizQuestionsCreate, Chunk, Item, QuizQuestion
 from app.api.deps import SessionDep
 import random
 import math
@@ -31,18 +31,23 @@ async def generate_quiz(item_id: str, session: SessionDep):
    
 
     try: 
-        quiz_response = QuizPublic(questions=all_questions)
+        quiz_response = QuizQuestionsCreate(questions=all_questions)
         for q in quiz_response.questions:
-            print(f"Question ID: {q.id}")
             print(f"Question: {q.question}")
             print(f"Options: {q.options}")
             print(f"Correct Answer: {q.correct_answer}")
             print("-----")
     except Exception as e:
         print("Error parsing quiz questions:", e)
-        quiz_response = QuizPublic(questions=[])
+        quiz_response = QuizQuestionsCreate(questions=[])
+
+    quiz_db = [QuizQuestion.model_validate(q, update={"item_id": item_id}) for q in quiz_response.questions]
+    session.add_all(quiz_db)
+    session.commit()
+    for question in quiz_db:
+        session.refresh(question) 
     
-    return quiz_response
+    return quiz_db
 
 
 
@@ -63,7 +68,6 @@ async def generate_quiz_questions(text, num_questions=5):
         Follow this JSON schema exactly:
         [
             {
-                "id": 1,
                 "question": "The question text here?",
                 "options": ["Option A", "Option B", "Option C", "Option D"],
                 "correct_answer": "Option A"

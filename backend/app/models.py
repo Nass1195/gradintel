@@ -3,7 +3,7 @@ import uuid
 
 from pydantic import EmailStr
 from sqlmodel import Field, Relationship, SQLModel
-from sqlalchemy import Column, Text, DateTime
+from sqlalchemy import Column, Text, DateTime, JSON
 from pgvector.sqlalchemy import Vector
 
 
@@ -88,6 +88,7 @@ class Item(ItemBase, table=True):
     owner: User | None = Relationship(back_populates="items")
     documents: list["Document"] = Relationship(back_populates="owner", cascade_delete=True)
     chat_messages: list["ChatMessage"] = Relationship(back_populates="owner", cascade_delete=True)
+    quiz_questions: list["QuizQuestion"] = Relationship(back_populates="item", cascade_delete=True)
 
 
 # Properties to return via API, id is always required
@@ -168,14 +169,26 @@ class ChunkCreate(ChunkBase):
 
 
 
-class QuizQuestion(SQLModel):
-    id: int
-    question: str
-    options: list[str]
-    correct_answer: str
+class QuizBase(SQLModel):   
+    question: str = Field(sa_column=Column(Text))
+    options: list[str] = Field(default_factory=list, sa_column=Column(JSON))
+    correct_answer: str = Field(sa_column=Column(Text))
+
+class QuizQuestion(QuizBase, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+    item_id: uuid.UUID = Field(
+        foreign_key="item.id", nullable=False, ondelete="CASCADE", index=True
+    )
+    item: Item | None = Relationship(back_populates="quiz_questions")
+
+class QuizQuestionsCreate(SQLModel):
+    questions: list[QuizBase]
+
+class QuizQuestionPublic(QuizBase):
+    id: uuid.UUID
 
 class QuizPublic(SQLModel):
-    questions: list[QuizQuestion]
+    questions: list[QuizQuestionPublic]
 
 
 
