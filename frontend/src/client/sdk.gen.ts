@@ -498,7 +498,17 @@ export class fileUploadService {
      * @returns QuizResponse Successful Response
      * @throws ApiError
      */
-    public static uploadFileForQuiz(id: string): CancelablePromise<QuizResponse> {
+    public static generateQuiz(id: string): CancelablePromise<QuizResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: `/api/v1/upload/quiz/generate/${id}`,
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+
+    public static getQuiz(id: string): CancelablePromise<QuizResponse> {
         return __request(OpenAPI, {
             method: 'GET',
             url: `/api/v1/upload/quiz/${id}`,

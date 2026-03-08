@@ -2,7 +2,7 @@ import { QuizQuestion } from "@/client/types.gen"
 import QuizQuestionComponent from "@/components/ui/quizQuestion"
 import { VStack, Text, Box, Button, Flex, IconButton } from "@chakra-ui/react"
 import { fileUploadService } from "@/client"
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { IoRefreshOutline } from "react-icons/io5"
 
 type QuizesProps = {
@@ -13,10 +13,22 @@ export default function Quizes({ itemId }: QuizesProps) {
   const [quiz, setQuiz] = useState<Array<QuizQuestion>>([])
   const [isLoading, setIsLoading] = useState<boolean>(false)
 
+    useEffect(() => {
+      const fetchChatLogs = async () => {
+        try {
+          const response = await fileUploadService.getQuiz(itemId)
+          setQuiz(response.questions)
+        } catch (error) {
+          console.error("Error fetching chat logs:", error)
+        }
+      }
+      fetchChatLogs()
+    }, [itemId])
+
   const handleQuizGeneration = async () => {
     setIsLoading(true)
     try {
-      const respond = await fileUploadService.uploadFileForQuiz(itemId)
+      const respond = await fileUploadService.generateQuiz(itemId)
       const quizes = respond.questions
       setQuiz(quizes)
     } catch (error) {
