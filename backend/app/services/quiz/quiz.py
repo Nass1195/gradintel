@@ -1,7 +1,7 @@
 from app.services import llmModel
 import json
 import re
-from sqlmodel import select
+from sqlmodel import select, delete
 from app.models import Document, QuizQuestionsCreate, Chunk, Item, QuizQuestion
 from app.api.deps import SessionDep
 import random
@@ -40,6 +40,11 @@ async def generate_quiz(item_id: str, session: SessionDep):
     except Exception as e:
         print("Error parsing quiz questions:", e)
         quiz_response = QuizQuestionsCreate(questions=[])
+
+    
+    statement = delete(QuizQuestion).where(QuizQuestion.item_id == item_id)
+    session.exec(statement)
+    session.commit()
 
     quiz_db = [QuizQuestion.model_validate(q, update={"item_id": item_id}) for q in quiz_response.questions]
     session.add_all(quiz_db)

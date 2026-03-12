@@ -216,3 +216,27 @@ class NewPassword(SQLModel):
 class UploadResponse(SQLModel):
     document: DocumentPublic
     summary: str
+
+
+class RadasDimensionScore(SQLModel):
+    score: float
+    rationale: str
+
+
+class RadasScores(SQLModel):
+    relevance: RadasDimensionScore
+    accuracy: RadasDimensionScore
+    depth: RadasDimensionScore
+    attribution: RadasDimensionScore
+    safety: RadasDimensionScore
+
+
+class RadasOverall(SQLModel):
+    score: float
+    method: str
+
+
+class RadasEvaluationPublic(SQLModel):
+    radas: RadasScores
+    overall: RadasOverall
+    notes: list[str] = []

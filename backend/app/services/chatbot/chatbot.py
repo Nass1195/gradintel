@@ -5,16 +5,24 @@ import numpy as np
 
 
 async def generate_chat_response(user_input: str, item_id, session) -> str:
-    history_statement = select(ChatMessage).where(ChatMessage.owner_id == item_id).order_by(ChatMessage.created_at)
+    response, _, _ = await generate_chat_response_with_context(user_input, item_id, session)
+    return response
+
+
+async def generate_chat_response_with_context(
+    user_input: str, item_id, session
+) -> tuple[str, list[str], str]:
+    history_statement = (
+        select(ChatMessage)
+        .where(ChatMessage.owner_id == item_id)
+        .order_by(ChatMessage.created_at)
+    )
     history = session.exec(history_statement).all()
     history = history[-6:]
     rewritten_query = await add_context_to_query(user_input, history)
     relevant_chunks = await retrieve_relevant_information(rewritten_query, item_id, session)
 
-    formatted_chunks = [
-        f"[Source {i+1}]: {chunk}" for i, chunk in enumerate(relevant_chunks)
-    ]
-
+    formatted_chunks = [f"[Source {i+1}]: {chunk}" for i, chunk in enumerate(relevant_chunks)]
     context_text = "\n\n".join(formatted_chunks)
 
     system_instruction = """
@@ -26,28 +34,28 @@ async def generate_chat_response(user_input: str, item_id, session) -> str:
     - If the answer is not in the context, say "I don't know."
     - When you use information, strictly cite sources using the provided labels, e.g., [Source 1], [Source 2].
     - Be concise and precise.
-    """
+    """.strip()
 
     history_messages = []
     for message in history:
         role = "user" if message.role == "user" else "assistant"
         history_messages.append({"role": role, "content": message.message})
 
-    user_prompt  = f"""
+    user_prompt = f"""
     User's question:
     {user_input}
     Relevant information retrieved from documents:
     {context_text}
     Answer:
-    """
+    """.strip()
 
     messages = [
         {"role": "system", "content": system_instruction},
         *history_messages,
-        {"role": "user", "content": user_prompt}
+        {"role": "user", "content": user_prompt},
     ]
     response = await llmModel.generate_text(messages, max_length=512)
-    return response
+    return response, relevant_chunks, rewritten_query
 
 def cosine_similarity(vecA, vecB):
     dot_product = np.dot(vecA, vecB)
@@ -115,5 +123,6 @@ async def add_context_to_query(user_input: str, history: list[ChatMessage]) -> s
 
     standalone_query = await llmModel.generate_text([{"role": "system", "content": system_instruction},
                                                      {"role": "user", "content": user_prompt}])
+    
     return standalone_query
     
