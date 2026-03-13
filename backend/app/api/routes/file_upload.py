@@ -20,7 +20,7 @@ from app.services.preprocess import preprocess
 from app.services.summarization import model as summarization_model
 from app.services.quiz import quiz as quiz_model
 from app.services.chatbot import chatbot 
-from app.services.chatbot import radas as radas_model
+from app.services.eval import RAG_eval
 
 router = APIRouter(prefix="/upload", tags=["file_upload"])
 
@@ -48,12 +48,12 @@ async def chat_with_document(
      return Message(message=response)
 
 
-@router.post("/chat/evaluate", response_model=RadasEvaluationPublic)
+@router.get("/chat/evaluate", response_model=RadasEvaluationPublic)
 async def evaluate_chatbot_radas(
-    *, item_id: UUID, session: SessionDep, current_user: CurrentUser
+    *, session: SessionDep, current_user: CurrentUser
 ) -> RadasEvaluationPublic:
    
-    evaluation = await radas_model.evaluate_radas()
+    evaluation = await RAG_eval.evaluate_RAG(session)
     return RadasEvaluationPublic.model_validate(evaluation)
 
 

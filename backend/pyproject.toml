@@ -25,7 +25,8 @@ dependencies = [
     "pypdf<4.0.0,>=3.14.0",
     "openai>=1.6.0",
     "pgvector>=0.3.6",
-    "numpy>=1.26.0,<3.0.0"
+    "numpy>=1.26.0,<3.0.0",
+    "datasets>=2.0.0"
 ]
 
 [tool.uv]
