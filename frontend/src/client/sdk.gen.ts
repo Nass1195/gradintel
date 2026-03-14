@@ -560,6 +560,14 @@ export class fileUploadService {
         });
     }
 
-       
+    public static runEvaluation(): CancelablePromise<QuizResponse> {
+        return __request(OpenAPI, {
+            method: 'GET',
+            url: `/api/v1/upload/chat/evaluate`,
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
     
 }
