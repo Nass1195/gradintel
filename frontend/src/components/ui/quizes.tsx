@@ -111,9 +111,21 @@ export default function Quizes({ itemId }: QuizesProps) {
             </VStack>
           </AbsoluteCenter>
         </ProgressCircle.Root>
+
+
         <Text fontSize="2xl" fontWeight="bold" color="fg.muted">
           Score: {percentage}%
         </Text>
+
+        <Button
+          onClick={handleQuizGeneration}
+          colorPalette={ringColor}
+          loading={isLoading}
+          mt={4}
+          size="lg"
+        >
+          Generate New Quiz
+        </Button>
       </VStack> 
     )
   }
