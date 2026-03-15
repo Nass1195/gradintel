@@ -2,7 +2,12 @@ import { QuizQuestion } from "@/client/types.gen"
 import { Box, Text, VStack } from "@chakra-ui/react"
 import { useState } from "react"
 
-export default function QuizQuestionComponent({ question }: { question: QuizQuestion }) {
+interface QuizQuestionProps {
+  question: QuizQuestion;
+  onQuizAnswer: (isCorrect: boolean) => void
+}
+
+export default function QuizQuestionComponent({ question, onQuizAnswer }: QuizQuestionProps) {
   const [selectedAnswer, setSelectedAnswer] = useState<string | null>(null)
 
   const getOptionStyle = (option: string) => {
@@ -16,6 +21,15 @@ export default function QuizQuestionComponent({ question }: { question: QuizQues
       return { bg: "bg.error", borderColor: "border.error", color: "fg.error" }
     }
     return {}
+  }
+
+  const handleAnswerSelection = (option: string) => {
+    if (!selectedAnswer) {
+      setSelectedAnswer(option)
+    }
+
+    const isCorrect = option === question.correct_answer
+    onQuizAnswer(isCorrect)
   }
 
   return (
@@ -33,7 +47,7 @@ export default function QuizQuestionComponent({ question }: { question: QuizQues
       <VStack align="stretch" gap={2}>
         {question.options.map((option, index) => (
           <Box
-            onClick={() => !selectedAnswer && setSelectedAnswer(option)}
+            onClick={() => handleAnswerSelection(option)}
             border="1px solid"
             borderColor={"border"}
             rounded="lg"
