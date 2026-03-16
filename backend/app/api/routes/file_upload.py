@@ -178,9 +178,9 @@ async def get_quiz_endpoint(
 
      return QuizPublic(questions=quiz)
 
-@router.post("/quiz/complete/{item_id}")
+@router.post("/quiz/complete")
 def update_chunks(
-     *, session: SessionDep, current_user: CurrentUser, item_id: UUID, answered_quiz: QuizPublic
+     *, session: SessionDep, current_user: CurrentUser, answered_quiz: QuizPublic
 ) -> Message:
      chunks: list[Chunk] = []
      chunk_ids = []
@@ -209,6 +209,7 @@ def update_chunks(
      if not current_user.is_superuser and (chunks[0].document.owner.owner_id != current_user.id):
           raise HTTPException(status_code=400, detail="Not enough permissions")
 
+     item_id = chunks[0].document.owner_id
      statement = delete(QuizQuestion).where(QuizQuestion.item_id == item_id)
      session.exec(statement)
 

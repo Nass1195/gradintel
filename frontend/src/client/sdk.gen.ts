@@ -569,5 +569,19 @@ export class fileUploadService {
             }
         });
     }
+
+    public static quizCompletion(quiz: QuizResponse): CancelablePromise<{ message: string}> {
+        return __request(OpenAPI, {
+            method: 'POST',
+            url: `/api/v1/upload/quiz/complete`,
+            body: quiz,
+            mediaType: 'application/json',
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+
+    
     
 }

@@ -42,6 +42,15 @@ export default function Quizes({ itemId }: QuizesProps) {
     }
   }
 
+  const hadleQuizCompletion = async () => {
+    try {
+      const respond = await fileUploadService.quizCompletion({ questions: quiz })
+      console.log(respond.message)
+    } catch (error) {
+      console.error( error)
+    }
+  }
+
   if (!quiz || quiz.length === 0) {
     return (
       <VStack align="stretch" gap={4} py={8}>
@@ -65,11 +74,11 @@ export default function Quizes({ itemId }: QuizesProps) {
     )
   }
 
-  if (!quiz || answeredQuestions == quiz.length) {
+  if ( answeredQuestions == quiz.length) {
     const percentage = answeredQuestions > 0 
       ? Math.round((correctAnswers / answeredQuestions) * 100) 
       : 0;
-
+    hadleQuizCompletion()
     let feedbackMessage = "Keep practicing!";
     let ringColor = "red";
     if (percentage >= 80) {
@@ -88,7 +97,8 @@ export default function Quizes({ itemId }: QuizesProps) {
         p={8}
         bg="bg.muted"
         borderRadius="xl"
-        boxShadow="lg"
+        border="1px solid"
+        borderColor="border"
         mt={10}
       >
         <VStack gap={1}>
@@ -154,6 +164,7 @@ export default function Quizes({ itemId }: QuizesProps) {
             key={q.question} 
             question={q} 
             onQuizAnswer={(iscorrect) => {
+              q.is_correct = iscorrect
               setAnsweredQuestions(answeredQuestions + 1)
               if (iscorrect) setCorrectAnswers(correctAnswers + 1)
             }}
