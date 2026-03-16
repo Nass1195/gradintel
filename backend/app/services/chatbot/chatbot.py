@@ -4,7 +4,7 @@ from app.models import Document, Chunk, Item, ChatMessage
 import numpy as np
 
 
-async def generate_chat_response(user_input: str, item_id, session) -> str:
+async def generate_chat_response(user_input: str, item_id, session) -> tuple[str, list[str]]:
     history_statement = (
         select(ChatMessage)
         .where(ChatMessage.owner_id == item_id)
@@ -14,13 +14,13 @@ async def generate_chat_response(user_input: str, item_id, session) -> str:
     history = history[-6:]
     rewritten_query = await add_context_to_query(user_input, history)
     relevant_chunks = await retrieve_relevant_information(rewritten_query, item_id, session)
-    response, _= await generate_chat_response_with_context(user_input, history, relevant_chunks)
-    return response
+    response = await generate_chat_response_with_context(user_input, history, relevant_chunks)
+    return response, relevant_chunks
 
 
 async def generate_chat_response_with_context(
     user_input: str, history, relevant_chunks
-) -> tuple[str, list[str]]:
+) -> str:
 
     formatted_chunks = [f"[Source {i+1}]: {chunk}" for i, chunk in enumerate(relevant_chunks)]
     context_text = "\n\n".join(formatted_chunks)
@@ -55,7 +55,7 @@ async def generate_chat_response_with_context(
         {"role": "user", "content": user_prompt},
     ]
     response = await llmModel.generate_text(messages, max_length=512)
-    return response, relevant_chunks
+    return response
 
 def cosine_similarity(vecA, vecB):
     dot_product = np.dot(vecA, vecB)

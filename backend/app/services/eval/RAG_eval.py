@@ -4,7 +4,7 @@ from typing import Any
 from datasets import load_dataset
 import numpy as np
 from app.services import llmModel
-from app.services.chatbot.chatbot import generate_chat_response_with_context, cosine_similarity
+from app.services.chatbot.chatbot import generate_chat_response_with_context, cosine_similarity, generate_chat_response
 from app.services.preprocess.preprocess import embed_chunks, store_chunks
 from app.models import Item, DocumentCreate, Document, User
 from sqlmodel import select
@@ -43,13 +43,27 @@ async def add_test_chunks_to_datadase(session):
 
 async def evaluate_RAG(session) -> list[dict[str, Any]]:
     await add_test_chunks_to_datadase(session)
-    dataset = load_dataset("vibrantlabsai/amnesty_qa","english_v3")
+    # dataset = load_dataset("vibrantlabsai/amnesty_qa","english_v3")
+    dataset2 = load_dataset("vibrantlabsai/fiqa","ragas_eval")
 
-    eval_data = dataset["eval"]
+    # eval_data = dataset["eval"]
+    baseline = dataset2["baseline"]
     evaluations = []
     similarity_scores = []
 
-    for data in eval_data:
+    for data in baseline:
+        question = data.get("question")
+        ground_truth = data.get("answer")
+        contexts = data.get("contexts")
+        generated_anwser, retrived_chunks = await generate_chat_response(question, settings.TEST_ITEM, session)
+        evaluation = await evaluate(generated_anwser, ground_truth)
+        similarity_scores.append(evaluation)
+        print(retrived_chunks)
+        print(contexts)
+        break
+
+
+    """for data in eval_data:
         question = data.get("user_input")
         ground_truth_answer = data.get("reference")
         relevant_chunks = data.get("retrieved_chunks", [])
@@ -58,7 +72,7 @@ async def evaluate_RAG(session) -> list[dict[str, Any]]:
         evaluation = await evaluate_genration(question, generated_answer, relevant_chunks, ground_truth_answer)
         similarity_scores.append(similarity_score)
         evaluations.append(evaluation)
-        print(f"Evaluation: {evaluation}")
+        print(f"Evaluation: {evaluation}")"""
 
     print(f"Average Similarity Score: {np.mean(similarity_scores)}")
    

@@ -7,46 +7,53 @@ from app.api.deps import SessionDep
 import random
 import math
 
+accept_ration = 0.7
 
 def retrieve_text_from_db(item_id: str, session: SessionDep):
-    statment =   (select(Chunk)
+    statement =   (select(Chunk)
     .join(Chunk.document)
     .join(Document.owner)
     .where(Item.id == item_id)
     )
-    documents_chuncks = session.exec(statment).all()
+    documents_chuncks = session.exec(statement).all()
     if not documents_chuncks:
         raise ValueError("Document not found")
     return documents_chuncks
 
+def get_struggled_chunks(item_id: str, session: SessionDep):
+    statement =   (select(Chunk)
+    .join(Chunk.document)
+    .where(Document.owner_id == item_id, Chunk.num_answered_questions > 0, Chunk.correct_answers <= (accept_ration * Chunk.num_answered_questions))
+    )
+    wrong_questions = session.exec(statement).all()
+
+    return wrong_questions
+
     
 async def generate_quiz(item_id: str, session: SessionDep):
     
-    documents_chuncks = retrieve_text_from_db(item_id, session)
     all_questions = []
-    selected_chunks = select_chenks_for_quiz(documents_chuncks, num_chunks=5)
+    chunk_ids = []
+    selected_chunks = select_chenks_for_quiz(item_id, session, num_chunks=5)
     for chunk in selected_chunks:
         quiz_questions = await generate_quiz_questions(chunk.content, num_questions=2)
         all_questions.extend(quiz_questions)
-   
-
-    try: 
-        quiz_response = QuizQuestionsCreate(questions=all_questions)
-        for q in quiz_response.questions:
-            print(f"Question: {q.question}")
-            print(f"Options: {q.options}")
-            print(f"Correct Answer: {q.correct_answer}")
-            print("-----")
-    except Exception as e:
-        print("Error parsing quiz questions:", e)
-        quiz_response = QuizQuestionsCreate(questions=[])
-
+        if quiz_questions:
+            chunk_ids.append(chunk.id)
+        
     
     statement = delete(QuizQuestion).where(QuizQuestion.item_id == item_id)
     session.exec(statement)
     session.commit()
 
-    quiz_db = [QuizQuestion.model_validate(q, update={"item_id": item_id}) for q in quiz_response.questions]
+
+    quiz_db = []
+    for i, chunk_id in enumerate(chunk_ids):
+        q1 = all_questions[2*i]
+        q2 = all_questions[2*i + 1]
+        quiz_db.append(QuizQuestion.model_validate(q1, update={"item_id": item_id, "chunk_id": chunk_id}))
+        quiz_db.append(QuizQuestion.model_validate(q2, update={"item_id": item_id, "chunk_id": chunk_id}))
+
     session.add_all(quiz_db)
     session.commit()
     for question in quiz_db:
@@ -54,13 +61,10 @@ async def generate_quiz(item_id: str, session: SessionDep):
     
     return quiz_db
 
-
-
 def clean_quiz_response(raw_response):
     clean_text = re.sub(r'```json', '', raw_response)
     clean_text = re.sub(r'```', '', clean_text)
     return clean_text.strip()
-    
     
 
 async def generate_quiz_questions(text, num_questions=5):
@@ -88,7 +92,6 @@ async def generate_quiz_questions(text, num_questions=5):
         {text}
     """
     
-
     messages = [
         {"role": "system", "content": system_instruction},
         {"role": "user", "content": user_prompt}
@@ -102,25 +105,53 @@ async def generate_quiz_questions(text, num_questions=5):
     except json.JSONDecodeError:
         print("Raw output:", cleaned_response)
         return []
-    print("Quiz Generation Responses:", quiz_data)
+
     return quiz_data
 
 
-def select_chenks_for_quiz(chunks, num_chunks=5):
+def select_chenks_for_quiz( item_id: str, session: SessionDep, num_chunks=5):
+    global accept_ration
+    chunks = retrieve_text_from_db(item_id, session) 
     total_chunks = len(chunks)
     if total_chunks <= num_chunks:
         return chunks
     
     selected_chunks = []
 
-    step = total_chunks / num_chunks
-    for i in range(num_chunks):
-        start_idx = math.floor(i * step)
-        end_idx  = math.floor((i + 1) * step) if i < num_chunks - 1 else total_chunks
+    struggled_pool = get_struggled_chunks(item_id, session)
+    print(len(struggled_pool))
 
-        bucket = chunks[start_idx:end_idx]
+    if len(struggled_pool) < math.ceil(num_chunks / 2):
+        accept_ration = min(0.95, accept_ration + 0.05)
+    elif len(struggled_pool) > 2 * math.ceil(num_chunks / 2):
+        accept_ration = max(0.0, accept_ration - 0.05)
 
-        selected_chunk = random.choice(bucket)
-        selected_chunks.append(selected_chunk)
+    review_limit = min(len(struggled_pool), math.ceil(num_chunks / 2))
+
+    if review_limit > 0:
+        selected_review_chunks = random.sample(struggled_pool, review_limit)
+        selected_chunks.extend(selected_review_chunks)
+
+    remaining_slots = num_chunks - len(selected_chunks)
+    if remaining_slots > 0:
+        remaining_pool = [c for c in chunks if c not in selected_chunks]
+
+        total_remaining = len(remaining_pool)
+
+        if total_remaining <= remaining_slots:
+            selected_chunks.extend(remaining_pool)
+            return selected_chunks
+        
+
+        step = total_remaining / remaining_slots
+        for i in range(remaining_slots):
+            start_idx = math.floor(i * step)
+            end_idx  = math.floor((i + 1) * step) if i < num_chunks - 1 else total_chunks
+
+            bucket = remaining_pool[start_idx:end_idx]
+
+            if bucket:
+                selected_chunk = random.choice(bucket)
+                selected_chunks.append(selected_chunk)
 
     return selected_chunks

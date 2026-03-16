@@ -155,6 +155,8 @@ class ChunkBase(SQLModel):
     content: str = Field(sa_column=Column(Text))
     chunk_index: int = Field(index=True)
     embedding: list[float] = Field(sa_column=Column(Vector(768))) 
+    num_answered_questions: int = Field(default=0, sa_column_kwargs={"server_default": "0"})
+    correct_answers: int = Field(default=0, sa_column_kwargs={"server_default": "0"})
 
 
 class Chunk(ChunkBase, table=True):
@@ -163,6 +165,8 @@ class Chunk(ChunkBase, table=True):
         foreign_key="document.id", nullable=False, ondelete="CASCADE", index=True
     )
     document: Document | None = Relationship(back_populates="chunks")
+    questions: list["QuizQuestion"] = Relationship(back_populates="chunk", cascade_delete=True)
+   
 
 class ChunkCreate(ChunkBase):
     pass
@@ -179,18 +183,23 @@ class QuizQuestion(QuizBase, table=True):
     item_id: uuid.UUID = Field(
         foreign_key="item.id", nullable=False, ondelete="CASCADE", index=True
     )
+    chunk_id: uuid.UUID = Field(
+        foreign_key="chunk.id", nullable=True, ondelete="CASCADE", index=True
+    )
     item: Item | None = Relationship(back_populates="quiz_questions")
+    chunk: Chunk | None = Relationship(back_populates="questions")
 
 class QuizQuestionsCreate(SQLModel):
     questions: list[QuizBase]
 
 class QuizQuestionPublic(QuizBase):
     id: uuid.UUID
+    chunk_id: uuid.UUID
+    is_correct: bool = False
+
 
 class QuizPublic(SQLModel):
     questions: list[QuizQuestionPublic]
-
-
 
 # Generic message
 class Message(SQLModel):

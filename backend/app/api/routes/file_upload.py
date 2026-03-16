@@ -1,9 +1,10 @@
-from sqlmodel import select
+from sqlmodel import select, delete
 from typing import Any
 from uuid import UUID
 from fastapi import APIRouter, HTTPException, UploadFile, File, Form
 from app.api.deps import CurrentUser, SessionDep
 from app.models import (
+    Item,
     Message,
     Document,
     DocumentCreate,
@@ -15,6 +16,7 @@ from app.models import (
     QuizPublic,
     QuizQuestion,
     RadasEvaluationPublic,
+    Chunk,
 )
 from app.services.preprocess import preprocess
 from app.services.summarization import model as summarization_model
@@ -29,6 +31,12 @@ async def chat_with_document(
      *, item_id: UUID, session: SessionDep, current_user: CurrentUser, user_input: Message
 ) -> Message:
      
+     item = session.get(Item, item_id)
+     if not item:
+          raise HTTPException(status_code=404, detail="Item not found")
+     if not current_user.is_superuser and (item.owner_id != current_user.id):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
+     
      user_message = ChatMessageCreate(message=user_input.message, role="user")
      db_message = ChatMessage.model_validate(user_message, update={"owner_id": item_id})
 
@@ -36,7 +44,7 @@ async def chat_with_document(
      session.commit()
      session.refresh(db_message)
 
-     response = await chatbot.generate_chat_response(user_input.message, item_id, session)
+     response, _ = await chatbot.generate_chat_response(user_input.message, item_id, session)
 
      assistant_message = ChatMessageCreate(message=response, role="assistant")
      db_assistant_message = ChatMessage.model_validate(assistant_message, update={"owner_id": item_id})
@@ -52,17 +60,24 @@ async def chat_with_document(
 async def evaluate_chatbot_radas(
     *, session: SessionDep, current_user: CurrentUser
 ) -> RadasEvaluationPublic:
-   
-    evaluation = await RAG_eval.evaluate_RAG(session)
-    return RadasEvaluationPublic.model_validate(evaluation)
+     if not current_user.is_superuser:
+          raise HTTPException(status_code=400, detail="Not enough permissions")
+     
+     evaluation = await RAG_eval.evaluate_RAG(session)
+     return RadasEvaluationPublic.model_validate(evaluation)
 
 
 @router.get("/chat/{item_id}", response_model=ChatMessagesPublic)
 def get_chat_history(
      *, item_id: UUID, session: SessionDep, current_user: CurrentUser
 ) -> ChatMessagesPublic:
+     
      statement = select(ChatMessage).where(ChatMessage.owner_id == item_id).order_by(ChatMessage.created_at)
      messages = session.exec(statement).all()
+
+     if not current_user.is_superuser and ( messages and (messages[0].owner.owner_id != current_user.id)):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
+     
      return ChatMessagesPublic(data=messages)
 
 
@@ -74,7 +89,9 @@ def read_document(id: UUID, session: SessionDep, current_user: CurrentUser) -> A
      statment = select(Document).where(Document.owner_id == id)
      documents = session.exec(statment).all()
      if not documents:
-        raise HTTPException(status_code=404, detail="Document not found")
+          raise HTTPException(status_code=404, detail="Document not found")
+     if not current_user.is_superuser and (documents[0].owner.owner_id != current_user.id):
+          raise HTTPException(status_code=400, detail="Not enough permissions")
      
      return DocumentsPublic(data=documents)
 
@@ -84,8 +101,13 @@ def read_document(id: UUID, session: SessionDep, current_user: CurrentUser) -> A
 @router.post("/{item_id}", response_model=UploadResponse)
 async def upload_file(
      *,item_id: UUID , session: SessionDep, current_user: CurrentUser,file: UploadFile = File(...)
-) -> Any:
-     print(f"Received file: {file.filename}")
+) -> Any:  
+     item = session.get(Item, item_id)
+     if not item:
+          raise HTTPException(status_code=404, detail="Item not found")
+     if not current_user.is_superuser and (item.owner_id != current_user.id):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
+
      text = await preprocess.read_file(file)
      file.file.seek(0)
      summary = await summarization_model.summarize(file)
@@ -106,12 +128,15 @@ async def upload_file(
 
 
 @router.delete("/{id}")
-def delete_item(
+def delete_document(
     session: SessionDep, current_user: CurrentUser, id: UUID
 ) -> Message:
      document = session.get(Document, id)
      if not document:
           raise HTTPException(status_code=404, detail="Document not found")
+     if not current_user.is_superuser and (document.owner.owner_id != current_user.id):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
+     
      item_id = document.owner_id
      session.delete(document)
      session.commit()
@@ -122,12 +147,18 @@ def delete_item(
 
 
 
-@router.get("/quiz/generate/{id}", response_model=QuizPublic)
+@router.get("/quiz/generate/{item_id}", response_model=QuizPublic)
 async def generate_quiz_endpoint(
-     *, session: SessionDep, current_user: CurrentUser, id: UUID
+     *, session: SessionDep, current_user: CurrentUser, item_id: UUID
 ) -> QuizPublic:
+     item = session.get(Item, item_id)
+     if not item:
+          raise HTTPException(status_code=404, detail="Item not found")
+     if not current_user.is_superuser and (item.owner_id != current_user.id):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
+     
      print(f"Received file for quiz generation")
-     quiz = await quiz_model.generate_quiz(id, session)
+     quiz = await quiz_model.generate_quiz(item_id, session)
      print("Generated quiz")
 
      return QuizPublic(questions=quiz)
@@ -138,4 +169,51 @@ async def get_quiz_endpoint(
 ) -> QuizPublic:
      statement = select(QuizQuestion).where(QuizQuestion.item_id == id)
      quiz = session.exec(statement).all()
+
+     if not quiz:
+          raise HTTPException(status_code=404, detail="quiz not found")
+     if not current_user.is_superuser and (quiz[0].item.owner_id != current_user.id):
+        raise HTTPException(status_code=400, detail="Not enough permissions")
+     
+
      return QuizPublic(questions=quiz)
+
+@router.post("/quiz/complete/{item_id}")
+def update_chunks(
+     *, session: SessionDep, current_user: CurrentUser, item_id: UUID, answered_quiz: QuizPublic
+) -> Message:
+     chunks: list[Chunk] = []
+     chunk_ids = []
+
+     for quiz in answered_quiz.questions:
+          isCorrect = quiz.is_correct
+          chunk_id = quiz.chunk_id
+
+          if chunk_id in chunk_ids:
+               for chunk in chunks:
+                    if chunk.id == chunk_id:
+                         chunk.num_answered_questions += 1
+                         chunk.correct_answers += int(isCorrect)
+          else:
+               chunk = session.get(Chunk, chunk_id)
+               
+               if not chunk:
+                    continue
+               chunk.num_answered_questions += 1
+               chunk.correct_answers += int(isCorrect)
+               chunks.append(chunk)
+               chunk_ids.append(chunk_id)
+
+     if not chunks:
+          raise HTTPException(status_code=404, detail="chunks not found")
+     if not current_user.is_superuser and (chunks[0].document.owner.owner_id != current_user.id):
+          raise HTTPException(status_code=400, detail="Not enough permissions")
+
+     statement = delete(QuizQuestion).where(QuizQuestion.item_id == item_id)
+     session.exec(statement)
+
+     session.add_all(chunks)
+     session.commit()
+
+     return Message(message="answer received")
+
