@@ -19,7 +19,7 @@ from app.models import (
     Chunk,
 )
 from app.services.preprocess import preprocess
-from app.services.summarization import model as summarization_model
+from app.services.summarization import summary as summarization_model
 from app.services.quiz import quiz as quiz_model
 from app.services.chatbot import chatbot 
 from app.services.eval import RAG_eval
@@ -107,19 +107,23 @@ async def upload_file(
           raise HTTPException(status_code=404, detail="Item not found")
      if not current_user.is_superuser and (item.owner_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
+     
+     preprocessed = await preprocess.preprocess_input(file)
+     chunks = preprocessed["chunks"]
+     text = preprocessed["clean_text"]
 
-     text = await preprocess.read_file(file)
-     file.file.seek(0)
-     summary = await summarization_model.summarize(file)
+     summary = await summarization_model.summarize_file(chunks)
+
      document = DocumentCreate(title=file.filename, content=text, summary=summary)
      db_document = Document.model_validate(document, update={"owner_id": item_id})
+
      session.add(db_document)
      session.commit()
      session.refresh(db_document)
-     file.file.seek(0)
-     await preprocess.preprocess_text_for_chat(file, db_document.id, session)
+     
+     await preprocess.preprocess_text_for_chat(chunks, db_document.id, session)
 
-     item_summary = summarization_model.generate_item_summry(item_id, session)
+     item_summary = await summarization_model.generate_item_summry(item_id, session)
 
      return UploadResponse( document=db_document, summary=item_summary)
 

@@ -64,7 +64,7 @@ def clean_text(text: str) -> str:
 def chunk_text(text, max_len=2000, overlap=250, separators=None):
 
     if separators is None:
-        separators = ["\n\n", "\n", " ", ""]
+        separators = ["\n\n", "\n", ".", " ", ""]
 
     if len(text) <= max_len:
         return [text]
@@ -130,9 +130,8 @@ async def preprocess_input(file: UploadFile):
     return processed_data
 
 
-async def preprocess_text_for_chat(file: UploadFile, document_id: UUID, session):
-    processed_data = await preprocess_input(file)
-    chunks = processed_data["chunks"]
+async def preprocess_text_for_chat(chunks: list[str], document_id: UUID, session):
+    
     embeddings = await embed_chunks(chunks)
     store_chunks(chunks, embeddings, document_id, session)
 
