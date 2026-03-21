@@ -7,9 +7,8 @@ from app.api.deps import SessionDep
 import random
 import math
 
-accept_ration = 0.7
 
-def retrieve_text_from_db(item_id: str, session: SessionDep):
+def retrieve_text_from_db(item_id: str, session: SessionDep) -> list[Chunk]:
     statement =   (select(Chunk)
     .join(Chunk.document)
     .join(Document.owner)
@@ -20,10 +19,10 @@ def retrieve_text_from_db(item_id: str, session: SessionDep):
         raise ValueError("Document not found")
     return documents_chuncks
 
-def get_struggled_chunks(item_id: str, session: SessionDep):
+def get_struggled_chunks(item_id: str, session: SessionDep, accept_ratio: float) -> list[Chunk]:
     statement =   (select(Chunk)
     .join(Chunk.document)
-    .where(Document.owner_id == item_id, Chunk.num_answered_questions > 0, Chunk.correct_answers <= (accept_ration * Chunk.num_answered_questions))
+    .where(Document.owner_id == item_id, Chunk.num_answered_questions > 0, Chunk.correct_answers <= (accept_ratio * Chunk.num_answered_questions))
     )
     wrong_questions = session.exec(statement).all()
 
@@ -109,22 +108,30 @@ async def generate_quiz_questions(text, num_questions=5):
     return quiz_data
 
 
-def select_chenks_for_quiz( item_id: str, session: SessionDep, num_chunks=5):
-    global accept_ration
-    chunks = retrieve_text_from_db(item_id, session) 
+def select_chenks_for_quiz( item_id: str, session: SessionDep, num_chunks=6):
+
+    chunks = retrieve_text_from_db(item_id, session)
+
     total_chunks = len(chunks)
+
     if total_chunks <= num_chunks:
         return chunks
     
+    item = session.get(Item, item_id)
+
     selected_chunks = []
 
-    struggled_pool = get_struggled_chunks(item_id, session)
+    struggled_pool = get_struggled_chunks(item_id, session, item.accept_ration)
     print(len(struggled_pool))
 
     if len(struggled_pool) < math.ceil(num_chunks / 2):
-        accept_ration = min(0.95, accept_ration + 0.05)
+        item.accept_ration = min(0.95, item.accept_ration + 0.05)
+        session.add(item)
+        session.commit()
     elif len(struggled_pool) > 2 * math.ceil(num_chunks / 2):
-        accept_ration = max(0.0, accept_ration - 0.05)
+        item.accept_ration = max(0.0,  item.accept_ration - 0.05)
+        session.add(item)
+        session.commit()
 
     review_limit = min(len(struggled_pool), math.ceil(num_chunks / 2))
 

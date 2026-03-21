@@ -65,6 +65,7 @@ class ItemBase(SQLModel):
     title: str = Field(min_length=1, max_length=255)
     description: str | None = Field(default=None, max_length=255)
     summary: str | None = Field(default=None, sa_column=Column(Text))
+    accept_ration : float = Field(default=0.7, sa_column_kwargs={"server_default": "0.7"})
 
 
 
