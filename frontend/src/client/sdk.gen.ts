@@ -501,7 +501,7 @@ export class fileUploadService {
     public static generateQuiz(id: string): CancelablePromise<QuizResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: `/api/v1/upload/quiz/generate/${id}`,
+            url: `/api/v1/quiz/generate/${id}`,
             errors: {
                 422: 'Validation Error'
             }
@@ -511,7 +511,7 @@ export class fileUploadService {
     public static getQuiz(id: string): CancelablePromise<QuizResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: `/api/v1/upload/quiz/${id}`,
+            url: `/api/v1/quiz/${id}`,
             errors: {
                 422: 'Validation Error'
             }
@@ -541,7 +541,7 @@ export class fileUploadService {
     public static chatWithDocument(userInput: Message, itemId: string): CancelablePromise<{ message: string}> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: `/api/v1/upload/chat/${itemId}`,
+            url: `/api/v1/chat/${itemId}`,
             body: userInput,
             mediaType: 'application/json',
             errors: {
@@ -553,7 +553,7 @@ export class fileUploadService {
     public static getChatLogs(itemId: string): CancelablePromise<ChatMessagesPublic> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: `/api/v1/upload/chat/${itemId}`,
+            url: `/api/v1/chat/${itemId}`,
             errors: {
                 422: 'Validation Error'
             }
@@ -563,7 +563,7 @@ export class fileUploadService {
     public static runEvaluation(): CancelablePromise<QuizResponse> {
         return __request(OpenAPI, {
             method: 'GET',
-            url: `/api/v1/upload/chat/evaluate`,
+            url: `/api/v1/chat/evaluate`,
             errors: {
                 422: 'Validation Error'
             }
@@ -573,7 +573,7 @@ export class fileUploadService {
     public static quizCompletion(quiz: QuizResponse): CancelablePromise<{ message: string}> {
         return __request(OpenAPI, {
             method: 'POST',
-            url: `/api/v1/upload/quiz/complete`,
+            url: `/api/v1/quiz/complete`,
             body: quiz,
             mediaType: 'application/json',
             errors: {
