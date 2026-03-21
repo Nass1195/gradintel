@@ -112,7 +112,7 @@ async def upload_file(
      chunks = preprocessed["chunks"]
      text = preprocessed["clean_text"]
 
-     summary = await summarization_model.summarize_file(chunks)
+     summary = await summarization_model.summarize_file(text)
 
      document = DocumentCreate(title=file.filename, content=text, summary=summary)
      db_document = Document.model_validate(document, update={"owner_id": item_id})

@@ -1,18 +1,24 @@
+from app.api.deps import SessionDep
+
 from app.services import llmModel
 from app.models import ItemUpdate, Item, Document
+from app.services.preprocess.preprocess import chunk_text 
 from sqlmodel import select
 from fastapi import HTTPException
 
-async def summarize_file(chunks):
+async def summarize_file(text: str) -> str:
+
+    chunks = chunk_text(text, max_len=4000, overlap=500)
+
     chunks_summeries = []
 
     print(len(chunks))
 
     for chunk in chunks:
-        summry = await summarize(chunk)
-        chunks_summeries.append(summry)
+        summary = await summarize(chunk)
+        chunks_summeries.append(summary)
 
-    text = "\n\n".join(chunk)
+    text = "\n\n".join(chunks_summeries)
     massage = [{"role": "system", "content": "Create a coherent final summary from these section summaries."},
                {"role": "user", "content": text}]
     
@@ -20,7 +26,7 @@ async def summarize_file(chunks):
         
     return outputs
 
-async def summarize(text: str):
+async def summarize(text: str) -> str:
     massage = [{"role": "system", "content": "You are a helpful assistant designed to summarize text. Provide a concise summary of the following text."},
                {"role": "user", "content": text}]
     
@@ -30,7 +36,7 @@ async def summarize(text: str):
 
 
 
-async def generate_item_summary(item_id, session):
+async def generate_item_summary(item_id: str, session: SessionDep) -> str:
  
     item = session.get(Item, item_id)
     if not item:
