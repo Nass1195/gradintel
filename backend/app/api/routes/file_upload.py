@@ -123,7 +123,7 @@ async def upload_file(
      
      await preprocess.preprocess_text_for_chat(chunks, db_document.id, session)
 
-     item_summary = await summarization_model.generate_item_summry(item_id, session)
+     item_summary = await summarization_model.generate_item_summary(item_id, session)
 
      return UploadResponse( document=db_document, summary=item_summary)
 
@@ -144,7 +144,7 @@ def delete_document(
      item_id = document.owner_id
      session.delete(document)
      session.commit()
-     summary = summarization_model.generate_item_summry(item_id, session)
+     summary = summarization_model.generate_item_summary(item_id, session)
      return Message(message=summary or "No summary available.")
 
 

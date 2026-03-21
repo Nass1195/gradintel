@@ -7,7 +7,7 @@ client = AsyncOpenAI(
 
 async def generate_text(messages, max_length=512):
     response = await client.chat.completions.create(
-        model="qwen3:14b",
+        model="qwen3:8b",
         messages=messages,
     )
     return response.choices[0].message.content

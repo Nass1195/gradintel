@@ -13,7 +13,6 @@ from uuid import UUID
 BATCH_SIZE = 32
 
 
-
 async def read_file(file: UploadFile) -> str:
     # Accept either a Path or a string path
     file_name = file.filename
@@ -131,10 +130,9 @@ async def preprocess_input(file: UploadFile):
 
 
 async def preprocess_text_for_chat(chunks: list[str], document_id: UUID, session):
-    
+
     embeddings = await embed_chunks(chunks)
     store_chunks(chunks, embeddings, document_id, session)
-
 
 
 

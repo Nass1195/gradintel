@@ -43,36 +43,24 @@ async def add_test_chunks_to_datadase(session):
 
 async def evaluate_RAG(session) -> list[dict[str, Any]]:
     await add_test_chunks_to_datadase(session)
-    # dataset = load_dataset("vibrantlabsai/amnesty_qa","english_v3")
-    dataset2 = load_dataset("vibrantlabsai/fiqa","ragas_eval")
 
-    # eval_data = dataset["eval"]
-    baseline = dataset2["baseline"]
+    dataset = load_dataset("vibrantlabsai/fiqa","ragas_eval")
+
+    baseline = dataset["baseline"]
     evaluations = []
     similarity_scores = []
-
+  
     for data in baseline:
         question = data.get("question")
         ground_truth = data.get("answer")
         contexts = data.get("contexts")
+        contexts_chunks = split_mashed_dataset(contexts[0])
         generated_anwser, retrived_chunks = await generate_chat_response(question, settings.TEST_ITEM, session)
         evaluation = await evaluate(generated_anwser, ground_truth)
+        genration_evaluation = evaluate_genration(question, generated_anwser, retrived_chunks, ground_truth)
+        evaluations.append(genration_evaluation)
         similarity_scores.append(evaluation)
-        print(retrived_chunks)
-        print(contexts)
-        break
-
-
-    """for data in eval_data:
-        question = data.get("user_input")
-        ground_truth_answer = data.get("reference")
-        relevant_chunks = data.get("retrieved_chunks", [])
-        generated_answer, _ = await generate_chat_response_with_context(question, [], relevant_chunks)
-        similarity_score = await evaluate(generated_answer, ground_truth_answer)
-        evaluation = await evaluate_genration(question, generated_answer, relevant_chunks, ground_truth_answer)
-        similarity_scores.append(similarity_score)
-        evaluations.append(evaluation)
-        print(f"Evaluation: {evaluation}")"""
+        print(compare_string_arrays(retrived_chunks, contexts_chunks)['overlap_percentage'])
 
     print(f"Average Similarity Score: {np.mean(similarity_scores)}")
    
@@ -85,7 +73,6 @@ async def evaluate(answer, ground_truth):
     similarity_score = cosine_similarity(answer_embedding, ground_truth_embedding)
     print(f"Similarity Score: {similarity_score}")
     return similarity_score
-
 
 
 
@@ -126,6 +113,28 @@ async def evaluate_genration(question: str, answer: str, relevant_chunks: list[s
         return evaluation_data
     except json.JSONDecodeError:
         return {
-            "radas_score": 0.0,
-            "radas_explanation": "Failed to parse evaluation response.",
+            "score": 0.0,
+            "explanation": "Failed to parse evaluation response.",
         }
+    
+def compare_string_arrays(retrieved_array: list[str], truth_array: list[str]) -> dict:
+    
+    set1 = set(retrieved_array)
+    set2 = set(truth_array)
+    
+    return {
+        "common_elements": list(set1.intersection(set2)),      
+        "missing_from_truth": list(set2.difference(set1)),   
+        "overlap_percentage": len(set1.intersection(set2)) / len(set2) if set2 else 0.0
+    }
+
+
+def split_mashed_dataset(mashed_string: str) -> list[str]:
+    text = mashed_string.replace(r"\'", "'")
+    fixed_string = re.sub(r'(?<=[a-z.!?])\"(?=[A-Z])', '|||"', text)
+    fixed_string = re.sub(r'(?<=[a-z.!?])\\\"(?=[A-Z])', '|||"', fixed_string)
+
+    clean_list = fixed_string.split('|||')
+    
+    return clean_list
+

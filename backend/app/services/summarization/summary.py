@@ -6,6 +6,8 @@ from fastapi import HTTPException
 async def summarize_file(chunks):
     chunks_summeries = []
 
+    print(len(chunks))
+
     for chunk in chunks:
         summry = await summarize(chunk)
         chunks_summeries.append(summry)
@@ -28,19 +30,20 @@ async def summarize(text: str):
 
 
 
-async def generate_item_summry(item_id, session):
-    statement = select(Document).where(Document.owner_id == item_id)
-    documents = session.exec(statement).all()
-
-    if not documents:
-        return
-    
+async def generate_item_summary(item_id, session):
+ 
     item = session.get(Item, item_id)
     if not item:
         raise HTTPException(status_code=404, detail="Item not found")
+    
+    statement = select(Document).where(Document.owner_id == item_id)
+    documents = session.exec(statement).all()
+    
 
-    if len(documents) == 1:
-        item_summary = documents[0].summary
+    if not documents:
+        outputs = ""
+    elif len(documents) == 1:
+        outputs = documents[0].summary
     else:
         item_summary = "\n\n".join(d.summary for d in documents)
         massage = [{"role": "system", "content": "Create a coherent final summary from these section summaries."},
