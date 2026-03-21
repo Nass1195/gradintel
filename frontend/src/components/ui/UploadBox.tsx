@@ -3,7 +3,7 @@ import { Box, Icon, Text, Button, VStack, Input, HStack } from "@chakra-ui/react
 import { useState, ChangeEvent, useEffect } from "react"
 import { fileUploadService } from "@/client"
 import { toaster } from "@/components/ui/toaster"
-import { FaCloudUploadAlt, FaFilePdf, FaTrash } from "react-icons/fa"
+import { FaCloudUploadAlt, FaFilePdf, FaTrash, FaChevronUp, FaChevronDown } from "react-icons/fa"
 import { DocumentPublic } from '@/client/types.gen'
 
 
@@ -17,6 +17,8 @@ interface UploadFileProps {
 
 export default function UploadBox({ onUploadStart, onUploadSuccess, onDeleteFile, itemId, document }: UploadFileProps) {
     const [savedDocument, setSavedDocument] = useState<Array<DocumentPublic>>([])
+    const [isExpanded, setIsExpanded] = useState(false)
+    const MAX_VISIBLE_FILES = 3
 
     useEffect(() => {
         if (document) {
@@ -106,6 +108,10 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, onDeleteFile
         }
     }
 
+    const visibleDocuments = isExpanded 
+        ? savedDocument 
+        : savedDocument.slice(0, MAX_VISIBLE_FILES)
+
     return (
         
         <Box 
@@ -155,7 +161,7 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, onDeleteFile
                         </VStack>
                     </VStack>
                 </Box>
-                {savedDocument.map((doc, index) => (
+                {visibleDocuments.map((doc, index) => (
                     <Box
                         border="1px solid"
                         borderColor="border"
@@ -192,6 +198,23 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, onDeleteFile
                         </HStack>
                     </Box>
                 ))}
+
+                {savedDocument.length > MAX_VISIBLE_FILES && (
+                    <Button
+                        w="full"
+                        variant="ghost"
+                        size="sm"
+                        mt={2}
+                        onClick={() => setIsExpanded(!isExpanded)}
+                        color="fg.muted"
+                        _hover={{ bg: "bg.subtle" }}
+                    >
+                        <HStack gap={2}>
+                            <Text>{isExpanded ? "Show Less" : `Show ${savedDocument.length - MAX_VISIBLE_FILES} More`}</Text>
+                            <Icon as={isExpanded ? FaChevronUp : FaChevronDown} />
+                        </HStack>
+                    </Button>
+                )}
 
             </Box>
 
