@@ -5,13 +5,13 @@ from app.models import (
     Item,
     ChatMessageCreate,
     ChatMessagesPublic,
-    RadasEvaluationPublic
+    EvaluationPublic
 )
 from app.services.chatbot import chatbot
 from uuid import UUID
 from app.api.deps import CurrentUser, SessionDep
 from sqlmodel import select
-from app.services.eval import RAG_eval, summary_eval
+from app.services.eval import RAG_eval, summary_eval, quiz_eval
 
 
 
@@ -47,15 +47,16 @@ async def chat_with_document(
     return Message(message=response)
 
 
-@router.get("/evaluate", response_model=RadasEvaluationPublic)
+@router.get("/evaluate", response_model=EvaluationPublic)
 async def evaluate_chatbot_radas(
     *, session: SessionDep, current_user: CurrentUser
-) -> RadasEvaluationPublic:
+) -> EvaluationPublic:
     if not current_user.is_superuser:
         raise HTTPException(status_code=400, detail="Not enough permissions")
-    await summary_eval.summary_eval()
-    evaluation = await RAG_eval.evaluate_RAG(session)
-    return RadasEvaluationPublic.model_validate(evaluation)
+    quiz_evaluation = await quiz_eval.evaluate_quiz(session)
+    summary_evaluation = await summary_eval.summary_eval()
+    rag_evaluation = await RAG_eval.evaluate_RAG(session)
+    return EvaluationPublic(quiz_evaluation=quiz_evaluation, summary_evaluation=summary_evaluation, rag_evaluation=rag_evaluation)
 
 
 @router.get("/{item_id}", response_model=ChatMessagesPublic)

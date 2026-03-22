@@ -2,7 +2,7 @@ from app.services import llmModel
 import json
 import re
 from sqlmodel import select, delete
-from app.models import Document, QuizQuestionsCreate, Chunk, Item, QuizQuestion
+from app.models import Document, Chunk, Item, QuizQuestion
 from app.api.deps import SessionDep
 import random
 import math
@@ -33,14 +33,16 @@ async def generate_quiz(item_id: str, session: SessionDep):
     
     all_questions = []
     chunk_ids = []
+    chunks_content = []
     selected_chunks = select_chenks_for_quiz(item_id, session, num_chunks=5)
     for chunk in selected_chunks:
         quiz_questions = await generate_quiz_questions(chunk.content, num_questions=2)
         all_questions.extend(quiz_questions)
         if quiz_questions:
             chunk_ids.append(chunk.id)
+            chunks_content.append(chunk.content)
         
-    
+
     statement = delete(QuizQuestion).where(QuizQuestion.item_id == item_id)
     session.exec(statement)
     session.commit()
@@ -58,7 +60,7 @@ async def generate_quiz(item_id: str, session: SessionDep):
     for question in quiz_db:
         session.refresh(question) 
     
-    return quiz_db
+    return quiz_db, chunks_content
 
 def clean_quiz_response(raw_response: str) -> str:
     clean_text = re.sub(r'```json', '', raw_response)

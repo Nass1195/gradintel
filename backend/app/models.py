@@ -173,7 +173,6 @@ class ChunkCreate(ChunkBase):
     pass
 
 
-
 class QuizBase(SQLModel):   
     question: str = Field(sa_column=Column(Text))
     options: list[str] = Field(default_factory=list, sa_column=Column(JSON))
@@ -203,6 +202,36 @@ class QuizQuestionPublic(QuizBase):
 class QuizPublic(SQLModel):
     questions: list[QuizQuestionPublic]
 
+
+class MCQEvaluation(SQLModel):
+    accuracy_score: int = Field(default=0)
+    clarity_score: int = Field(default=0)
+    distractor_score: int = Field(default=0)
+    total_score: int = Field(default=0)
+    reasoning: str = Field(sa_column=Column(Text))
+
+
+class RAGEvaluation(SQLModel):
+    relevance_score: float = Field(default=0.0)
+    accuracy_score: float = Field(default=0.0)
+    completeness_score: float = Field(default=0.0)
+    overall_score: float = Field(default=0.0)
+    explanation: str = Field(sa_column=Column(Text))
+
+class RAGEvaluationOutput(SQLModel):
+    similarity_scores: list[float]
+    evaluations: list[RAGEvaluation]
+
+class bertEvaluation(SQLModel):
+    precision: float
+    recall: float
+    f1_score: float
+
+class EvaluationPublic(SQLModel):
+    quiz_evaluation: list[MCQEvaluation]
+    rag_evaluation: RAGEvaluationOutput
+    summary_evaluation: list[bertEvaluation]
+
 # Generic message
 class Message(SQLModel):
     message: str
@@ -228,26 +257,3 @@ class UploadResponse(SQLModel):
     document: DocumentPublic
     summary: str
 
-
-class RadasDimensionScore(SQLModel):
-    score: float
-    rationale: str
-
-
-class RadasScores(SQLModel):
-    relevance: RadasDimensionScore
-    accuracy: RadasDimensionScore
-    depth: RadasDimensionScore
-    attribution: RadasDimensionScore
-    safety: RadasDimensionScore
-
-
-class RadasOverall(SQLModel):
-    score: float
-    method: str
-
-
-class RadasEvaluationPublic(SQLModel):
-    radas: RadasScores
-    overall: RadasOverall
-    notes: list[str] = []

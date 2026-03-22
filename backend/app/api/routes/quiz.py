@@ -26,7 +26,7 @@ async def generate_quiz_endpoint(
         raise HTTPException(status_code=400, detail="Not enough permissions")
     
     print(f"Received file for quiz generation")
-    quiz = await quiz_model.generate_quiz(item_id, session)
+    quiz, _ = await quiz_model.generate_quiz(item_id, session)
     print("Generated quiz")
 
     return QuizPublic(questions=quiz)

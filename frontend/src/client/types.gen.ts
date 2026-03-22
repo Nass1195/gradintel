@@ -272,3 +272,36 @@ export type ChatMessage = {
 export type ChatMessagesPublic = {
     data: Array<ChatMessage>;
 }
+
+export type MCQEvaluation = {
+  accuracy_score: number;
+  clarity_score: number;
+  distractor_score: number;
+  total_score: number;
+  reasoning: string;
+}
+
+export type RAGEvaluation = {
+  relevance_score: number;
+  accuracy_score: number;
+  completeness_score: number;
+  overall_score: number;
+  explanation: string;
+}
+
+export type RAGEvaluationOutput = {
+  similarity_scores: number[];
+  evaluations: RAGEvaluation[];
+}
+
+export type BertEvaluation = {
+  precision: number;
+  recall: number;
+  f1_score: number;
+}
+
+export type EvaluationPublic = {
+  quiz_evaluation: MCQEvaluation[];
+  rag_evaluation: RAGEvaluationOutput;
+  summary_evaluation: BertEvaluation[];
+}

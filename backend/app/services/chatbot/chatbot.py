@@ -57,13 +57,13 @@ async def generate_chat_response_with_context(
     response = await llmModel.generate_text(messages, max_length=512)
     return response
 
-def cosine_similarity(vecA, vecB):
+def cosine_similarity(vecA, vecB) -> float:
     dot_product = np.dot(vecA, vecB)
     normA = np.linalg.norm(vecA)
     normB = np.linalg.norm(vecB)
     if normA == 0 or normB == 0:
         return 0.0
-    return dot_product / (normA * normB)
+    return float(dot_product / (normA * normB))
 
 async def retrieve_relevant_information(user_input: str, item_id, session, k: int = 5) -> list[str]:
     query_embeddings = await llmModel.generate_embedding([user_input])
