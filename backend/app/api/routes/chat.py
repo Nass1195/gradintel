@@ -11,7 +11,7 @@ from app.services.chatbot import chatbot
 from uuid import UUID
 from app.api.deps import CurrentUser, SessionDep
 from sqlmodel import select
-from app.services.eval import RAG_eval
+from app.services.eval import RAG_eval, summary_eval
 
 
 
@@ -53,7 +53,7 @@ async def evaluate_chatbot_radas(
 ) -> RadasEvaluationPublic:
     if not current_user.is_superuser:
         raise HTTPException(status_code=400, detail="Not enough permissions")
-    
+    await summary_eval.summary_eval()
     evaluation = await RAG_eval.evaluate_RAG(session)
     return RadasEvaluationPublic.model_validate(evaluation)
 

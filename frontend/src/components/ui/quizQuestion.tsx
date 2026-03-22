@@ -69,6 +69,15 @@ export default function QuizQuestionComponent({ question, onQuizAnswer }: QuizQu
           </Box>
         ))}
       </VStack>
+      {selectedAnswer && (
+        <Box mt={4} p={3} bg="bg.panel" rounded="md" border="1px solid" borderColor="border.emphasized">
+          <Text fontSize="sm" color="fg.muted">
+            <Text as="span" fontWeight="bold" mr={1}>Explanation:</Text> 
+            {question.explanation}
+          </Text>
+        </Box>
+      )}
+      
     </Box>
   )
 }

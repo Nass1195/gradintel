@@ -60,13 +60,13 @@ async def generate_quiz(item_id: str, session: SessionDep):
     
     return quiz_db
 
-def clean_quiz_response(raw_response):
+def clean_quiz_response(raw_response: str) -> str:
     clean_text = re.sub(r'```json', '', raw_response)
     clean_text = re.sub(r'```', '', clean_text)
     return clean_text.strip()
     
 
-async def generate_quiz_questions(text, num_questions=5):
+async def generate_quiz_questions(text: str, num_questions=5):
 
     system_instruction = """
         You are a helpful assistant that generates multiple-choice quizzes.
@@ -79,6 +79,7 @@ async def generate_quiz_questions(text, num_questions=5):
                 "question": "The question text here?",
                 "options": ["Option A", "Option B", "Option C", "Option D"],
                 "correct_answer": "Option A"
+                "explanation": "explain the answer"
             }
         ]
     """
@@ -108,7 +109,7 @@ async def generate_quiz_questions(text, num_questions=5):
     return quiz_data
 
 
-def select_chenks_for_quiz( item_id: str, session: SessionDep, num_chunks=6):
+def select_chenks_for_quiz( item_id: str, session: SessionDep, num_chunks=6) -> list[Chunk]:
 
     chunks = retrieve_text_from_db(item_id, session)
 

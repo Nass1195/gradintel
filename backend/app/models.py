@@ -178,6 +178,7 @@ class QuizBase(SQLModel):
     question: str = Field(sa_column=Column(Text))
     options: list[str] = Field(default_factory=list, sa_column=Column(JSON))
     correct_answer: str = Field(sa_column=Column(Text))
+    explanation: str = Field(sa_column=Column(Text))
 
 class QuizQuestion(QuizBase, table=True):
     id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)

@@ -239,6 +239,7 @@ export type QuizQuestion = {
     question: string;
     options: Array<string>;
     correct_answer: string;
+    explanation: string;
     chunk_id: string;
     is_correct: boolean;
 };
