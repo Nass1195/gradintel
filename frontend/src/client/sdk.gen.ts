@@ -562,6 +562,16 @@ export class fileUploadService {
 
     public static runEvaluation(): CancelablePromise<EvaluationPublic> {
         return __request(OpenAPI, {
+            method: 'POST',
+            url: `/api/v1/chat/evaluate`,
+            errors: {
+                422: 'Validation Error'
+            }
+        });
+    }
+
+    public static getEvaluation(): CancelablePromise<EvaluationPublic> {
+        return __request(OpenAPI, {
             method: 'GET',
             url: `/api/v1/chat/evaluate`,
             errors: {

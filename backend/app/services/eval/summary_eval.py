@@ -7,6 +7,8 @@ from bert_score import score
 async def summary_eval() -> list[bertEvaluation]:
     dataset = load_dataset("ccdv/pubmed-summarization", "section", split="test")
 
+    dataset = dataset.select(range(10))
+
     evaluations: list[bertEvaluation] = [] 
 
     for data in dataset:

@@ -5,7 +5,8 @@ from app.models import (
     Item,
     ChatMessageCreate,
     ChatMessagesPublic,
-    EvaluationPublic
+    EvaluationPublic,
+    EvaluationRun
 )
 from app.services.chatbot import chatbot
 from uuid import UUID
@@ -16,6 +17,43 @@ from app.services.eval import RAG_eval, summary_eval, quiz_eval
 
 
 router = APIRouter(prefix="/chat", tags=["chat"])
+
+
+@router.post("/evaluate", response_model=EvaluationPublic)
+async def evaluate(
+    *, session: SessionDep, current_user: CurrentUser
+) -> EvaluationPublic:
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=400, detail="Not enough permissions")
+    
+    rag_evaluation = await RAG_eval.evaluate_RAG(session)
+    quiz_evaluation = await quiz_eval.evaluate_quiz(session)
+    summary_evaluation = await summary_eval.summary_eval()
+    
+    evaluation_public = EvaluationPublic(quiz_evaluation=quiz_evaluation, summary_evaluation=summary_evaluation, rag_evaluation=rag_evaluation)
+    db_record = EvaluationRun(evaluation_data=evaluation_public.model_dump())
+    
+    session.add(db_record)
+    session.commit()
+
+    return evaluation_public
+
+@router.get("/evaluate", response_model=EvaluationPublic)
+async def get_evaluation(
+    *, session: SessionDep, current_user: CurrentUser
+) -> EvaluationPublic:
+    if not current_user.is_superuser:
+        raise HTTPException(status_code=400, detail="Not enough permissions")
+    statement = select(EvaluationRun)
+    db_record = session.exec(statement).first()
+    if db_record:
+        raw_data_dict = db_record.evaluation_data
+
+        evaluation_public = EvaluationPublic.model_validate(raw_data_dict)
+    else:
+        raise HTTPException(status_code=404, detail="Record not fount")
+    
+    return evaluation_public
 
 @router.post("/{item_id}", response_model=Message)
 async def chat_with_document(
@@ -46,17 +84,6 @@ async def chat_with_document(
 
     return Message(message=response)
 
-
-@router.get("/evaluate", response_model=EvaluationPublic)
-async def evaluate_chatbot_radas(
-    *, session: SessionDep, current_user: CurrentUser
-) -> EvaluationPublic:
-    if not current_user.is_superuser:
-        raise HTTPException(status_code=400, detail="Not enough permissions")
-    quiz_evaluation = await quiz_eval.evaluate_quiz(session)
-    summary_evaluation = await summary_eval.summary_eval()
-    rag_evaluation = await RAG_eval.evaluate_RAG(session)
-    return EvaluationPublic(quiz_evaluation=quiz_evaluation, summary_evaluation=summary_evaluation, rag_evaluation=rag_evaluation)
 
 
 @router.get("/{item_id}", response_model=ChatMessagesPublic)

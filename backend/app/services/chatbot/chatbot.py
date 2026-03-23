@@ -11,7 +11,7 @@ async def generate_chat_response(user_input: str, item_id, session) -> tuple[str
         .order_by(ChatMessage.created_at)
     )
     history = session.exec(history_statement).all()
-    history = history[-6:]
+    history = history[-4:]
     rewritten_query = await add_context_to_query(user_input, history)
     relevant_chunks = await retrieve_relevant_information(rewritten_query, item_id, session)
     response = await generate_chat_response_with_context(user_input, history, relevant_chunks)

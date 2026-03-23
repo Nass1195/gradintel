@@ -19,21 +19,25 @@ async def add_test_chunks_to_datadase(session: SessionDep):
         if not user:
             return
         item = Item(id=settings.TEST_ITEM, title="Test Item", owner_id=user.id)
+
         session.add(item)
         session.commit()
         session.refresh(item)
+
         print("item_added")
         document = DocumentCreate(title="test doc")
         db_document = Document.model_validate(document, update={"owner_id": item.id})
+
         session.add(db_document)
         session.commit()
         session.refresh(db_document)
+
         print("document_added")
         dataset = load_dataset("vibrantlabsai/fiqa","corpus")
-        data = dataset["corpus"]
+        data = dataset["corpus"].select(range(30))
         chunks = []
         for doc in data:
-            chunk = doc["doc"]
+            chunk = doc.get("doc")
             chunks.append(chunk)
         embeded_chuncks = await embed_chunks(chunks)
         store_chunks(chunks, embeded_chuncks, db_document.id , session)
@@ -47,7 +51,7 @@ async def evaluate_RAG(session: SessionDep) -> list[dict[str, Any]]:
 
     dataset = load_dataset("vibrantlabsai/fiqa","ragas_eval")
 
-    baseline = dataset["baseline"]
+    baseline = dataset["baseline"].select(range(10))
     evaluations: list[RAGEvaluation] = []
     similarity_scores: list[float]= []
   

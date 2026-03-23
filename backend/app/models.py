@@ -219,18 +219,23 @@ class RAGEvaluation(SQLModel):
     explanation: str = Field(sa_column=Column(Text))
 
 class RAGEvaluationOutput(SQLModel):
-    similarity_scores: list[float]
-    evaluations: list[RAGEvaluation]
+    similarity_scores: list[float] = Field(default_factory=list)
+    evaluations: list[RAGEvaluation] = Field(default_factory=list)
 
 class bertEvaluation(SQLModel):
-    precision: float
-    recall: float
-    f1_score: float
+    precision: float = Field(default=0.0)
+    recall: float = Field(default=0.0)
+    f1_score: float = Field(default=0.0)
 
 class EvaluationPublic(SQLModel):
-    quiz_evaluation: list[MCQEvaluation]
-    rag_evaluation: RAGEvaluationOutput
-    summary_evaluation: list[bertEvaluation]
+    quiz_evaluation: list[MCQEvaluation] = Field(default_factory=list)
+    rag_evaluation: RAGEvaluationOutput 
+    summary_evaluation: list[bertEvaluation] = Field(default_factory=list)
+
+class EvaluationRun(SQLModel, table=True):
+    id: uuid.UUID = Field(default_factory=uuid.uuid4, primary_key=True)
+
+    evaluation_data: dict = Field(default_factory=dict, sa_column=Column(JSON))
 
 # Generic message
 class Message(SQLModel):

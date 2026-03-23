@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { fileUploadService } from "@/client"
 import { EvaluationPublic } from "@/client/types.gen"
 import {
@@ -29,6 +29,19 @@ function RouteComponent() {
   const [status, setStatus] = useState<'idle' | 'running' | 'completed' | 'error'>('idle');
   const [data, setData] = useState<EvaluationPublic | null>(null);
   const [errorMessage, setErrorMessage] = useState<string>('');
+
+  useEffect(() => {
+      const fetchEvaluation= async () => {
+        try {
+          const response = await fileUploadService.getEvaluation()
+          setData(response)
+          setStatus('completed')
+        } catch (error) {
+          console.error("Error fetching Evaluation:", error)
+        }
+      }
+      fetchEvaluation()
+  }, [])
 
   const runEvaluation = async () => {
     setErrorMessage('');
@@ -89,7 +102,7 @@ function RouteComponent() {
               <Box mb={6} p={4} bg="bg.panel" borderRadius="md" borderWidth="1px">
                 <Text fontWeight="bold" display="inline" mr={2}>Similarity Scores:</Text>
                 <Text display="inline" fontFamily="monospace" color="fg.muted">
-                  [{data.rag_evaluation.similarity_scores.map(s => s.toFixed(3)).join(', ')}]
+                  {data.rag_evaluation.similarity_scores.map(s => s.toFixed(3)).join(', ')}
                 </Text>
               </Box>
 

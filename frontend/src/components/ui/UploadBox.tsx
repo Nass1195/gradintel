@@ -218,10 +218,6 @@ export default function UploadBox({ onUploadStart, onUploadSuccess, onDeleteFile
 
             </Box>
 
-           
-           
-            
-            
         </Box>
   
     )
