@@ -1,13 +1,13 @@
 from openai import AsyncOpenAI
 
 client = AsyncOpenAI(
-    base_url="http://host.docker.internal:11434/v1",
-    api_key="ollama"
+    api_key="GEMINI_API_KEY",
+    base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
 )
 
 async def generate_text(messages, max_length=512):
     response = await client.chat.completions.create(
-        model="qwen3:8b",
+        model="gemini-2.5-flash",
         messages=messages,
     )
     return response.choices[0].message.content
@@ -15,7 +15,7 @@ async def generate_text(messages, max_length=512):
 
 async def generate_embedding(input):
     response = await client.embeddings.create(
-        model="embeddinggemma",
+        model="gemini-embedding-001",
         input=input,
     )
     return [d.embedding for d in response.data]
