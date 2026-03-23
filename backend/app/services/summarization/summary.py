@@ -1,4 +1,5 @@
 from app.api.deps import SessionDep
+import asyncio
 
 from app.services import llmModel
 from app.models import ItemUpdate, Item, Document
@@ -10,15 +11,15 @@ async def summarize_file(text: str) -> str:
 
     chunks = chunk_text(text, max_len=4000, overlap=500)
 
-    chunks_summeries = []
+    chunks_summaries = []
 
     print(len(chunks))
 
-    for chunk in chunks:
-        summary = await summarize(chunk)
-        chunks_summeries.append(summary)
+    tasks = [summarize(chunk) for chunk in chunks]
 
-    text = "\n\n".join(chunks_summeries)
+    chunks_summaries = await asyncio.gather(*tasks)
+
+    text = "\n\n".join(chunks_summaries)
     massage = [{"role": "system", "content": "Create a coherent final summary from these section summaries."},
                {"role": "user", "content": text}]
     

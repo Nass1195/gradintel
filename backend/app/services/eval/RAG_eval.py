@@ -34,7 +34,7 @@ async def add_test_chunks_to_datadase(session: SessionDep):
 
         print("document_added")
         dataset = load_dataset("vibrantlabsai/fiqa","corpus")
-        data = dataset["corpus"].select(range(30))
+        data = dataset["corpus"]
         chunks = []
         for doc in data:
             chunk = doc.get("doc")

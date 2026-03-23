@@ -6,6 +6,7 @@ from app.models import Document, Chunk, Item, QuizQuestion
 from app.api.deps import SessionDep
 import random
 import math
+import asyncio
 
 
 def retrieve_text_from_db(item_id: str, session: SessionDep) -> list[Chunk]:
@@ -35,10 +36,14 @@ async def generate_quiz(item_id: str, session: SessionDep):
     chunk_ids = []
     chunks_content = []
     selected_chunks = select_chenks_for_quiz(item_id, session, num_chunks=5)
-    for chunk in selected_chunks:
-        quiz_questions = await generate_quiz_questions(chunk.content, num_questions=2)
-        all_questions.extend(quiz_questions)
+
+    tasks = [generate_quiz_questions(chunk.content, num_questions=2) for chunk in selected_chunks]
+
+    results = await asyncio.gather(*tasks)
+
+    for chunk, quiz_questions in zip(selected_chunks, results):
         if quiz_questions:
+            all_questions.extend(quiz_questions)
             chunk_ids.append(chunk.id)
             chunks_content.append(chunk.content)
         
