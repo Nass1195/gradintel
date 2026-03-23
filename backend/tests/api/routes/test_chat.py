@@ -2,11 +2,12 @@ import uuid
 from unittest.mock import AsyncMock, patch
 
 from fastapi.testclient import TestClient
-from sqlmodel import Session
+from sqlmodel import Session, delete
 
 from app.core.config import settings
 from app.models import (
     ChatMessage,
+    EvaluationRun,
     MCQEvaluation,
     RAGEvaluation,
     RAGEvaluationOutput,
@@ -131,7 +132,7 @@ def test_evaluate_chatbot_superuser(
             )
         ],
     )
-    response = client.get(
+    response = client.post(
         f"{settings.API_V1_STR}/chat/evaluate",
         headers=superuser_token_headers,
     )
@@ -149,5 +150,62 @@ def test_evaluate_chatbot_forbidden_for_non_superuser(
         f"{settings.API_V1_STR}/chat/evaluate",
         headers=normal_user_token_headers,
     )
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Not enough permissions"
+
+
+def test_get_evaluation_superuser_success(
+    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+) -> None:
+    db.exec(delete(EvaluationRun))
+    db.commit()
+    eval_payload = {
+        "quiz_evaluation": [],
+        "rag_evaluation": {
+            "similarity_scores": [0.85],
+            "evaluations": []
+        },
+        "summary_evaluation": []
+    }
+    
+   
+    db_record = EvaluationRun(evaluation_data=eval_payload)
+    db.add(db_record)
+    db.commit()
+
+   
+    response = client.get(
+        f"{settings.API_V1_STR}/chat/evaluate",
+        headers=superuser_token_headers,
+    )
+
+    
+    assert response.status_code == 200
+    content = response.json()
+    assert "rag_evaluation" in content
+    assert content["rag_evaluation"]["similarity_scores"] == [0.85]
+
+def test_get_evaluation_not_found(
+    client: TestClient, superuser_token_headers: dict[str, str], db: Session
+) -> None:
+    db.exec(delete(EvaluationRun))
+    db.commit()
+    
+    response = client.get(
+        f"{settings.API_V1_STR}/chat/evaluate",
+        headers=superuser_token_headers,
+    )
+    
+    assert response.status_code == 404
+    assert response.json()["detail"] == "Record not fount"
+
+def test_get_evaluation_normal_user_forbidden(
+    client: TestClient, normal_user_token_headers: dict[str, str]
+) -> None:
+    response = client.get(
+        f"{settings.API_V1_STR}/chat/evaluate",
+        headers=normal_user_token_headers,
+    )
+    
     assert response.status_code == 400
     assert response.json()["detail"] == "Not enough permissions"

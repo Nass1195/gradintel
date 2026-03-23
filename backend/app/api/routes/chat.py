@@ -11,7 +11,7 @@ from app.models import (
 from app.services.chatbot import chatbot
 from uuid import UUID
 from app.api.deps import CurrentUser, SessionDep
-from sqlmodel import select
+from sqlmodel import select, delete
 from app.services.eval import RAG_eval, summary_eval, quiz_eval
 
 
@@ -32,6 +32,9 @@ async def evaluate(
     
     evaluation_public = EvaluationPublic(quiz_evaluation=quiz_evaluation, summary_evaluation=summary_evaluation, rag_evaluation=rag_evaluation)
     db_record = EvaluationRun(evaluation_data=evaluation_public.model_dump())
+
+    session.exec(delete(EvaluationRun))
+    session.commit()
     
     session.add(db_record)
     session.commit()

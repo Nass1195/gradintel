@@ -162,3 +162,15 @@ def test_delete_item_not_enough_permissions(
     assert response.status_code == 400
     content = response.json()
     assert content["detail"] == "Not enough permissions"
+
+
+def test_read_items_not_superuser(
+    client: TestClient, normal_user_token_headers: dict[str, str], db: Session
+) -> None:
+    response = client.get(
+        f"{settings.API_V1_STR}/items/",
+        headers=normal_user_token_headers,
+    )
+    assert response.status_code == 200
+    content = response.json()
+    assert "data" in content
