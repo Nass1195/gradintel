@@ -62,7 +62,7 @@ async def upload_file(
 
 
 @router.delete("/{id}")
-def delete_document(
+async def delete_document(
     session: SessionDep, current_user: CurrentUser, id: UUID
 ) -> Message:
      document = session.get(Document, id)
@@ -74,7 +74,7 @@ def delete_document(
      item_id = document.owner_id
      session.delete(document)
      session.commit()
-     summary = summarization_model.generate_item_summary(item_id, session)
+     summary = await summarization_model.generate_item_summary(item_id, session)
      return Message(message=summary or "No summary available.")
 
 
