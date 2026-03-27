@@ -17,8 +17,9 @@ async def summary_eval() -> list[bertEvaluation]:
         summary = await summarize_file(article)
 
         evaluation = bert_evaluation(abstract, summary)
+        evaluation.original_text = article
+        evaluation.summary = summary
         evaluations.append(evaluation)
-        print(evaluation)
 
 
     return evaluations

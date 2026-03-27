@@ -210,6 +210,9 @@ class MCQEvaluation(SQLModel):
     distractor_score: int = Field(default=0)
     total_score: int = Field(default=0)
     reasoning: str = Field(sa_column=Column(Text))
+    question: str = Field(default="", sa_column=Column(Text))
+    options: list[str] = Field(default_factory=list, sa_column=Column(JSON))
+    source_text: str = Field(default="", sa_column=Column(Text))
 
 
 class RAGEvaluation(SQLModel):
@@ -218,6 +221,9 @@ class RAGEvaluation(SQLModel):
     completeness_score: float = Field(default=0.0)
     overall_score: float = Field(default=0.0)
     explanation: str = Field(sa_column=Column(Text))
+    user_query: str = Field(default="", sa_column=Column(Text))
+    generated_answer: str = Field(default="", sa_column=Column(Text))
+    ground_truth: str = Field(default="", sa_column=Column(Text))
 
 class RAGEvaluationOutput(SQLModel):
     similarity_scores: list[float] = Field(default_factory=list)
@@ -227,6 +233,8 @@ class bertEvaluation(SQLModel):
     precision: float = Field(default=0.0)
     recall: float = Field(default=0.0)
     f1_score: float = Field(default=0.0)
+    original_text: str = Field(default="", sa_column=Column(Text))
+    summary: str = Field(default="", sa_column=Column(Text))
 
 class EvaluationPublic(SQLModel):
     quiz_evaluation: list[MCQEvaluation] = Field(default_factory=list)

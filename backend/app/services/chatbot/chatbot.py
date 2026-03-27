@@ -23,7 +23,6 @@ async def generate_chat_response_with_context(
 ) -> str:
 
     formatted_chunks = [f"[{chunk.file_name if getattr(chunk, 'file_name', None) else f'source {i}'}]: {chunk.content}" for i, chunk in enumerate(relevant_chunks)]
-    print(formatted_chunks)
     context_text = "\n\n".join(formatted_chunks)
 
     system_instruction = """

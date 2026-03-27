@@ -16,10 +16,15 @@ async def evaluate_quiz(session: SessionDep) -> list[MCQEvaluation]:
     for i, chunk_content in enumerate(chunks_content):
         eval1 = await evaluate_mcq_quality(chunk_content, quiz[2*i])
         eval2 = await evaluate_mcq_quality(chunk_content, quiz[2*i + 1])
+        eval1.source_text = chunk_content
+        eval2.source_text = chunk_content
+        eval1.question = quiz[2*i].question
+        eval1.options = quiz[2*i].options
+        eval2.question = quiz[2*i + 1].question
+        eval2.options = quiz[2*i + 1].options
         evaluations.append(eval1)
         evaluations.append(eval2)
 
-    print(evaluations)
     valid_quiz_evals = [q for q in evaluations if isinstance(q, MCQEvaluation)]
 
     return valid_quiz_evals

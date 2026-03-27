@@ -274,34 +274,42 @@ export type ChatMessagesPublic = {
 }
 
 export type MCQEvaluation = {
-  accuracy_score: number;
-  clarity_score: number;
-  distractor_score: number;
-  total_score: number;
-  reasoning: string;
+    accuracy_score: number;
+    clarity_score: number;
+    distractor_score: number;
+    total_score: number;
+    reasoning: string;
+    question: string;
+    options: Array<string>
+    source_text: string;
 }
 
 export type RAGEvaluation = {
-  relevance_score: number;
-  accuracy_score: number;
-  completeness_score: number;
-  overall_score: number;
-  explanation: string;
+    relevance_score: number;
+    accuracy_score: number;
+    completeness_score: number;
+    overall_score: number;
+    explanation: string;
+    user_query: string;
+    generated_answer: string;
+    ground_truth: string;
 }
 
 export type RAGEvaluationOutput = {
-  similarity_scores: number[];
-  evaluations: RAGEvaluation[];
+    similarity_scores: number[];
+    evaluations: RAGEvaluation[];
 }
 
 export type BertEvaluation = {
-  precision: number;
-  recall: number;
-  f1_score: number;
+    precision: number;
+    recall: number;
+    f1_score: number;
+    original_text: string;
+    summary: string;
 }
 
 export type EvaluationPublic = {
-  quiz_evaluation: MCQEvaluation[];
-  rag_evaluation: RAGEvaluationOutput;
-  summary_evaluation: BertEvaluation[];
+    quiz_evaluation: MCQEvaluation[];
+    rag_evaluation: RAGEvaluationOutput;
+    summary_evaluation: BertEvaluation[];
 }

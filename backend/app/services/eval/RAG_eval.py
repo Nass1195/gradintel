@@ -65,12 +65,12 @@ async def evaluate_RAG(session: SessionDep) -> list[dict[str, Any]]:
 
         evaluation = await evaluate(generated_anwser, ground_truth)
         genration_evaluation = await evaluate_genration(question, generated_anwser, contexts, ground_truth)
-
+        genration_evaluation.user_query = question
+        genration_evaluation.ground_truth = ground_truth
+        genration_evaluation.generated_answer = generated_anwser
         evaluations.append(genration_evaluation)
         similarity_scores.append(evaluation)
        
-
-    print(f"Average Similarity Score: {np.mean(similarity_scores)}")
    
     return RAGEvaluationOutput(similarity_scores=similarity_scores, evaluations=evaluations)
 
