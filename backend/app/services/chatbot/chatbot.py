@@ -19,10 +19,11 @@ async def generate_chat_response(user_input: str, item_id, session) -> tuple[str
 
 
 async def generate_chat_response_with_context(
-    user_input: str, history, relevant_chunks
+    user_input: str, history, relevant_chunks: list[Chunk]
 ) -> str:
 
-    formatted_chunks = [f"[Source {i+1}]: {chunk}" for i, chunk in enumerate(relevant_chunks)]
+    formatted_chunks = [f"[{chunk.file_name if getattr(chunk, 'file_name', None) else f'source {i}'}]: {chunk.content}" for i, chunk in enumerate(relevant_chunks)]
+    print(formatted_chunks)
     context_text = "\n\n".join(formatted_chunks)
 
     system_instruction = """
@@ -65,7 +66,7 @@ def cosine_similarity(vecA, vecB) -> float:
         return 0.0
     return float(dot_product / (normA * normB))
 
-async def retrieve_relevant_information(user_input: str, item_id, session, k: int = 5) -> list[str]:
+async def retrieve_relevant_information(user_input: str, item_id, session, k: int = 5) -> list[Chunk]:
     query_embeddings = await llmModel.generate_embedding([user_input])
     embeddings = np.array(query_embeddings[0], dtype=np.float32)
     statment =   (select(Chunk)
@@ -84,7 +85,7 @@ async def retrieve_relevant_information(user_input: str, item_id, session, k: in
             continue
         chunk_embedding = np.array(chunk.embedding, dtype=np.float32)
         score = cosine_similarity(embeddings, chunk_embedding)
-        scores.append((score, chunk.content))
+        scores.append((score, chunk))
 
     scores.sort(key=lambda x: x[0], reverse=True)
 

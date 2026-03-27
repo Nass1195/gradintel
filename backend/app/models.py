@@ -155,7 +155,8 @@ class ChatMessagesPublic(SQLModel):
 class ChunkBase(SQLModel):
     content: str = Field(sa_column=Column(Text))
     chunk_index: int = Field(index=True)
-    embedding: list[float] = Field(sa_column=Column(Vector(768))) 
+    embedding: list[float] = Field(sa_column=Column(Vector(768)))
+    file_name: str | None =  Field(default=None, max_length=255)
     num_answered_questions: int = Field(default=0, sa_column_kwargs={"server_default": "0"})
     correct_answers: int = Field(default=0, sa_column_kwargs={"server_default": "0"})
 

@@ -40,7 +40,7 @@ async def add_test_chunks_to_datadase(session: SessionDep):
             chunk = doc.get("doc")
             chunks.append(chunk)
         embeded_chuncks = await embed_chunks(chunks)
-        store_chunks(chunks, embeded_chuncks, db_document.id , session)
+        store_chunks(chunks, "test" ,embeded_chuncks, db_document.id , session)
         print("chuncks added")
 
 

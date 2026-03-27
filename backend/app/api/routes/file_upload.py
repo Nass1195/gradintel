@@ -40,6 +40,7 @@ async def upload_file(
      if not current_user.is_superuser and (item.owner_id != current_user.id):
         raise HTTPException(status_code=400, detail="Not enough permissions")
      
+     file_name = file.filename
      preprocessed = await preprocess.preprocess_input(file)
      chunks = preprocessed["chunks"]
      text = preprocessed["clean_text"]
@@ -53,7 +54,7 @@ async def upload_file(
      session.commit()
      session.refresh(db_document)
      
-     await preprocess.preprocess_text_for_chat(chunks, db_document.id, session)
+     await preprocess.preprocess_text_for_chat(chunks, file_name, db_document.id, session)
 
      item_summary = await summarization_model.generate_item_summary(item_id, session)
 

@@ -129,10 +129,10 @@ async def preprocess_input(file: UploadFile):
     return processed_data
 
 
-async def preprocess_text_for_chat(chunks: list[str], document_id: UUID, session):
+async def preprocess_text_for_chat(chunks: list[str], file_name: str, document_id: UUID, session):
 
     embeddings = await embed_chunks(chunks)
-    store_chunks(chunks, embeddings, document_id, session)
+    store_chunks(chunks, file_name, embeddings, document_id, session)
 
 
 
@@ -145,13 +145,14 @@ async def embed_chunks(chunks: list[str]):
     return embeddings
 
 
-def store_chunks(chunks: list[str], embeddings: list[list[float]], document_id: UUID, session):
+def store_chunks(chunks: list[str], file_name: str, embeddings: list[list[float]], document_id: UUID, session):
     chunks_to_store = []
     for i, (chunk, embedding) in enumerate(zip(chunks, embeddings)):
         chunk_obj = ChunkCreate(
             content=chunk,
             chunk_index=i,
             embedding=embedding,
+            file_name=file_name,
         )
         db_chunk = Chunk.model_validate(chunk_obj, update={"document_id": document_id})
         chunks_to_store.append(db_chunk)
