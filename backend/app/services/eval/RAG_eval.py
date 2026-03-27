@@ -61,10 +61,10 @@ async def evaluate_RAG(session: SessionDep) -> list[dict[str, Any]]:
         ground_truth = data.get("answer")
         contexts = data.get("contexts")
 
-        generated_anwser, _ = await generate_chat_response(question, settings.TEST_ITEM, session)
+        generated_anwser, retrieved_context = await generate_chat_response(question, settings.TEST_ITEM, session)
 
         evaluation = await evaluate(generated_anwser, ground_truth)
-        genration_evaluation = await evaluate_genration(question, generated_anwser, contexts, ground_truth)
+        genration_evaluation = await evaluate_genration(question, generated_anwser, contexts, retrieved_context , ground_truth)
         genration_evaluation.user_query = question
         genration_evaluation.ground_truth = ground_truth
         genration_evaluation.generated_answer = generated_anwser
@@ -84,18 +84,20 @@ async def evaluate(answer, ground_truth) -> float:
 
 
 
-async def evaluate_genration(question: str, answer: str, relevant_chunks: list[str], ground_truth: str ) -> RAGEvaluation:
+async def evaluate_genration(question: str, answer: str, relevant_chunks: list[str], retrieved_chunks: list[str], ground_truth: str ) -> RAGEvaluation:
 
     system_instruction = """You are an assistant that evaluates the quality of answers based on based on the following criteria:
     1. Relevance: Does the answer directly address the user's question?
     2. Accuracy: Is the information in the answer correct based on the relevant chunks and the Ground Truth provided?
     3. Completeness: Does the answer cover all key points mentioned in the Ground Truth?
+    4. Retrieval Quilty: compare the Retrieved context to the Relavent context
 
         return the evaluation in the following JSON format:
         {
             "relevance_score": float,
             "accuracy_score": float,
             "completeness_score": float,
+            "retrieval_quilty": float,
             "overall_score": float,
             "explanation": str
         }
@@ -106,7 +108,9 @@ async def evaluate_genration(question: str, answer: str, relevant_chunks: list[s
     Question: {question}
     generated Answer: {answer}
     Ground Truth: {ground_truth}
-    Relevant Chunks: {relevant_chunks}
+    Relevant context: {relevant_chunks}
+    Retrieved context: {retrieved_chunks}
+
 
     Evaluate the quality of the answer based on relevance, accuracy, and completeness. Provide a score between 0 and 1, and a brief explanation for the score.
     """.strip()

@@ -192,6 +192,7 @@ function RouteComponent() {
                         <CustomStat label="Relevance" value={rag.relevance_score.toFixed(1)} />
                         <CustomStat label="Accuracy" value={rag.accuracy_score.toFixed(1)} />
                         <CustomStat label="Completeness" value={rag.completeness_score.toFixed(1)} />
+                        <CustomStat label="Retrieval Quilty" value={rag.retrieval_quilty.toFixed(1)} />
                         <CustomStat label="Overall" value={rag.overall_score.toFixed(1)} color="green.500" />
                       </Flex>
                       <Text fontSize="sm" color="fg.muted"><strong>Explanation:</strong> {rag.explanation}</Text>
@@ -268,12 +269,12 @@ function RouteComponent() {
                       <Box mb={6} pb={6} borderBottomWidth="1px" borderColor="border.subtle">
         
                        
-                        <Box mb={5} p={4} bg="gray.50" borderRadius="md" borderWidth="1px" borderColor="gray.200">
-                          <Text fontSize="xs" fontWeight="bold" color="gray.500" textTransform="uppercase" mb={2} >
+                        <Box mb={5} p={4} bg="bg.panel" borderRadius="md" borderWidth="1px" borderColor="border">
+                          <Text fontSize="xs" fontWeight="bold" color="fg.muted" textTransform="uppercase" mb={2} >
                             📄 Source Text Context
                           </Text>
                          
-                          <Text fontSize="sm" color="gray.700">
+                          <Text fontSize="sm" color="fg.muted">
                             {quiz.source_text}
                           </Text>
                         </Box>
@@ -302,10 +303,10 @@ function RouteComponent() {
                                 px={3} 
                                 borderWidth="1px" 
                                 borderRadius="md" 
-                                bg="white"
-                                borderColor="gray.200"
+                                bg="bg.panel"
+                                borderColor="border"
                               >
-                                <Text fontSize="sm" color="gray.800">
+                                <Text fontSize="sm" color="fg.muted">
                                   
                                   {option}
                                 </Text>

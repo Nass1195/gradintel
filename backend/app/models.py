@@ -219,6 +219,7 @@ class RAGEvaluation(SQLModel):
     relevance_score: float = Field(default=0.0)
     accuracy_score: float = Field(default=0.0)
     completeness_score: float = Field(default=0.0)
+    retrieval_quilty: float = Field(default=0.0)
     overall_score: float = Field(default=0.0)
     explanation: str = Field(sa_column=Column(Text))
     user_query: str = Field(default="", sa_column=Column(Text))

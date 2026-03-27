@@ -288,6 +288,7 @@ export type RAGEvaluation = {
     relevance_score: number;
     accuracy_score: number;
     completeness_score: number;
+    retrieval_quilty: number;
     overall_score: number;
     explanation: string;
     user_query: string;
