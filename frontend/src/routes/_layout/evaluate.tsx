@@ -221,7 +221,7 @@ function RouteComponent() {
                   <Dialog.Body pb={6}>
                     {/* The Question */}
                     <Box mb={6}>
-                      <Text fontSize="xs" fontWeight="bold" color="fg.muted" textTransform="uppercase" tracking="wider">
+                      <Text fontSize="xs" fontWeight="bold" color="fg.muted" textTransform="uppercase">
                         User Query
                       </Text>
                       <Text fontWeight="semibold" fontSize="md" mt={1} color="fg.default">
