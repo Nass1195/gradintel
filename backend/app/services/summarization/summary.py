@@ -9,7 +9,7 @@ from fastapi import HTTPException
 
 async def summarize_file(text: str) -> str:
 
-    chunks = chunk_text(text, max_len=4000, overlap=500)
+    chunks = chunk_text(text, max_len=20000, overlap=2000)
 
     chunks_summaries = []
 

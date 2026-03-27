@@ -66,7 +66,7 @@ def cosine_similarity(vecA, vecB) -> float:
         return 0.0
     return float(dot_product / (normA * normB))
 
-async def retrieve_relevant_information(user_input: str, item_id, session, k: int = 5) -> list[Chunk]:
+async def retrieve_relevant_information(user_input: str, item_id, session, k: int = 10) -> list[Chunk]:
     query_embeddings = await llmModel.generate_embedding([user_input])
     embeddings = np.array(query_embeddings[0], dtype=np.float32)
     statment =   (select(Chunk)

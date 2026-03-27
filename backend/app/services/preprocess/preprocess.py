@@ -60,7 +60,7 @@ def clean_text(text: str) -> str:
 
 
 
-def chunk_text(text, max_len=2000, overlap=250, separators=None):
+def chunk_text(text, max_len=3000, overlap=300, separators=None):
 
     if separators is None:
         separators = ["\n\n", "\n", ".", " ", ""]
