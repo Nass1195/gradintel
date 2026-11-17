@@ -1,0 +1,16 @@
+{$DOMAIN} {
+	encode zstd gzip
+
+	# API and interactive docs go to the FastAPI backend
+	@backend path /api/* /docs /docs/* /redoc
+	handle @backend {
+		reverse_proxy backend:8000
+	}
+
+	# Everything else is the React single-page app
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}

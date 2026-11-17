@@ -1,13 +1,15 @@
 from openai import AsyncOpenAI
 
+from app.core.config import settings
+
 client = AsyncOpenAI(
-    api_key="GEMINI_API_KEY",
+    api_key=settings.GEMINI_API_KEY,
     base_url="https://generativelanguage.googleapis.com/v1beta/openai/"
 )
 
 embedding_client = AsyncOpenAI(
     api_key="ollama",
-    base_url="http://host.docker.internal:11434/v1"
+    base_url=settings.OLLAMA_BASE_URL
 )
 
 async def generate_text(messages, max_length=512):

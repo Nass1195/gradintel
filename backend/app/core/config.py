@@ -86,6 +86,10 @@ class Settings(BaseSettings):
 
     EMAIL_RESET_TOKEN_EXPIRE_HOURS: int = 48
 
+    # LLM providers
+    GEMINI_API_KEY: str = ""
+    OLLAMA_BASE_URL: str = "http://host.docker.internal:11434/v1"
+
     @computed_field  # type: ignore[prop-decorator]
     @property
     def emails_enabled(self) -> bool:
